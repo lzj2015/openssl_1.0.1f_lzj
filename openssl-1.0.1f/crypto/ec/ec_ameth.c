@@ -615,14 +615,9 @@ static int ec_pkey_ctrl(EVP_PKEY *pkey, int op, long arg1, void *arg2)
 #endif
 
 		case ASN1_PKEY_CTRL_DEFAULT_MD_NID:
-#ifndef OPENSSL_NO_SM2
-        if (EC_GROUP_get_curve_name(EC_KEY_get0_group(pkey->pkey.ec)) == NID_sm2)
-            *(int *)arg2 = NID_sm3;
-        else
-#endif // !OPENSSL_NO_SM2
 		*(int *)arg2 = NID_sha1;
 		return 2;
-		
+
 		default:
 		return -2;
 
@@ -663,3 +658,44 @@ const EVP_PKEY_ASN1_METHOD eckey_asn1_meth =
 	old_ec_priv_decode,
 	old_ec_priv_encode
 	};
+
+
+
+#ifndef OPENSSL_NO_SM2
+
+
+
+const EVP_PKEY_ASN1_METHOD sm2_asn1_meth = 
+	{
+	EVP_PKEY_SM2,
+	EVP_PKEY_SM2,
+	0,
+	"EC",
+	"OpenSSL EC algorithm",
+
+	eckey_pub_decode,
+	eckey_pub_encode,
+	eckey_pub_cmp,
+	eckey_pub_print,
+
+	eckey_priv_decode,
+	eckey_priv_encode,
+	eckey_priv_print,
+
+	int_ec_size,
+	ec_bits,
+
+	eckey_param_decode,
+	eckey_param_encode,
+	ec_missing_parameters,
+	ec_copy_parameters,
+	ec_cmp_parameters,
+	eckey_param_print,
+	0,
+
+	int_ec_free,
+	ec_pkey_ctrl,
+	old_ec_priv_decode,
+	old_ec_priv_encode
+	};
+#endif

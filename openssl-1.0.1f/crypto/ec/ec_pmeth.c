@@ -63,7 +63,9 @@
 #include <openssl/ecdsa.h>
 #include <openssl/evp.h>
 #include "evp_locl.h"
-
+#ifndef OPENSSL_NO_SM2
+#include <openssl/sm2.h>
+#endif
 
 /* EC pkey context structure */
 
@@ -73,7 +75,6 @@ typedef struct
 	EC_GROUP *gen_group;
 	/* message digest */
 	const EVP_MD *md;
-
 	} EC_PKEY_CTX;
 
 static int pkey_ec_init(EVP_PKEY_CTX *ctx)
@@ -115,6 +116,7 @@ static void pkey_ec_cleanup(EVP_PKEY_CTX *ctx)
 		if (dctx->gen_group)
 			EC_GROUP_free(dctx->gen_group);
 		OPENSSL_free(dctx);
+		dctx = NULL;
 		}
 	}
 
@@ -139,11 +141,19 @@ static int pkey_ec_sign(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen,
 
 	if (dctx->md)
 		type = EVP_MD_type(dctx->md);
+#if !defined(OPENSSL_NO_SM2) && !defined(OPENSSL_NO_SM3)
+	else if (EC_GROUP_get_curve_name(EC_KEY_get0_group(ec)) == NID_sm2)
+		type = NID_sm3;
+#endif
 	else
 		type = NID_sha1;
 
-
-	ret = ECDSA_sign(type, tbs, tbslen, sig, &sltmp, ec);
+#ifndef OPENSSL_NO_SM2
+	if (EC_GROUP_get_curve_name(EC_KEY_get0_group(ec)) == NID_sm2)
+		ret = sm2_sign(tbs, tbslen, sig, &sltmp, ec);
+	else
+#endif
+		ret = ECDSA_sign(type, tbs, tbslen, sig, &sltmp, ec);
 
 	if (ret <= 0)
 		return ret;
@@ -161,13 +171,23 @@ static int pkey_ec_verify(EVP_PKEY_CTX *ctx,
 
 	if (dctx->md)
 		type = EVP_MD_type(dctx->md);
+#ifndef OPENSSL_NO_SM2
+	else if (EC_GROUP_get_curve_name(EC_KEY_get0_group(ec)) == NID_sm2)
+		type = NID_sm3;
+#endif
 	else
 		type = NID_sha1;
 
-	ret = ECDSA_verify(type, tbs, tbslen, sig, siglen, ec);
+#ifndef OPENSSL_NO_SM2
+	if (EC_GROUP_get_curve_name(EC_KEY_get0_group(ec)) == NID_sm2)
+		ret = sm2_verify(tbs, tbslen, sig, siglen, ec);
+	else
+#endif
+		ret = ECDSA_verify(type, tbs, tbslen, sig, siglen, ec);
 
 	return ret;
 	}
+
 
 static int pkey_ec_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen)
 	{
@@ -223,6 +243,9 @@ static int pkey_ec_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
 
 		case EVP_PKEY_CTRL_MD:
 		if (EVP_MD_type((const EVP_MD *)p2) != NID_sha1 &&
+#ifndef OPENSSL_NO_SM3
+			EVP_MD_type((const EVP_MD *)p2) != NID_sm3 &&
+#endif
 		    EVP_MD_type((const EVP_MD *)p2) != NID_ecdsa_with_SHA1 &&
 		    EVP_MD_type((const EVP_MD *)p2) != NID_sha224 &&
 		    EVP_MD_type((const EVP_MD *)p2) != NID_sha256 &&

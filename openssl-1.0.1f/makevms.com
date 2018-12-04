@@ -247,13 +247,8 @@ $! One of the best way to figure out what the list should be is to do
 $! the following on a Unix system:
 $!   grep OPENSSL_NO_ crypto/*/*.h ssl/*.h engines/*.h engines/*/*.h|grep ':# *if'|sed -e 's/^.*def //'|sort|uniq
 $! For that reason, the list will also always end up in alphabetical order
-$!
-$! China SM
-$!
 $ CONFIG_LOGICALS := AES,-
 			 SM4,-
-			 SM3,-
-			 SM2,-
 		     ASM,INLINE_ASM,-
 		     BF,-
 		     BIO,-
@@ -272,6 +267,7 @@ $ CONFIG_LOGICALS := AES,-
 		     EC2M,-
 		     ECDH,-
 		     ECDSA,-
+		     SM2,-
 		     EC_NISTP_64_GCC_128,-
 		     ENGINE,-
 		     ERR,-
@@ -288,6 +284,7 @@ $ CONFIG_LOGICALS := AES,-
 		     MD2,-
 		     MD4,-
 		     MD5,-
+		     SM3,-
 		     MDC2,-
 		     OCSP,-
 		     PSK,-
@@ -708,14 +705,13 @@ $ EXHEADER := e_os2.h
 $ copy 'exheader' sys$disk:[.include.openssl]
 $!
 $! Copy All The ".H" Files From The [.CRYPTO] Directory Tree.
-$! China SM
 $!
 $ SDIRS := , -
    'ARCHD', -
    OBJECTS, -
-   MD2, MD4, SM3, MD5, SHA, MDC2, HMAC, RIPEMD, WHRLPOOL, -
-   SM4, DES, AES, RC2, RC4, RC5, IDEA, BF, CAST, CAMELLIA, SEED, MODES, -
-   SM2, BN, EC, RSA, DSA, ECDSA, DH, ECDH, DSO, ENGINE, -
+   MD2, MD4, MD5, SM3, SHA, MDC2, HMAC, RIPEMD, WHRLPOOL, -
+   DES, AES, SM4, RC2, RC4, RC5, IDEA, BF, CAST, CAMELLIA, SEED, MODES, -
+   BN, EC, RSA, DSA, ECDSA, DH, ECDH, SM2, DSO, ENGINE, -
    BUFFER, BIO, STACK, LHASH, RAND, ERR, -
    EVP, ASN1, PEM, X509, X509V3, CONF, TXT_DB, PKCS7, PKCS12, -
    COMP, OCSP, UI, KRB5, -
@@ -727,13 +723,7 @@ $ EXHEADER_OBJECTS := objects.h, obj_mac.h
 $ EXHEADER_MD2 := md2.h
 $ EXHEADER_MD4 := md4.h
 $ EXHEADER_MD5 := md5.h
-$!
-$! China SM
-$!
 $ EXHEADER_SM3 := sm3.h
-$ EXHEADER_SM4 := sm4.h
-$ EXHEADER_SM2 := sm2.h
-$!
 $ EXHEADER_SHA := sha.h
 $ EXHEADER_MDC2 := mdc2.h
 $ EXHEADER_HMAC := hmac.h
@@ -741,6 +731,7 @@ $ EXHEADER_RIPEMD := ripemd.h
 $ EXHEADER_WHRLPOOL := whrlpool.h
 $ EXHEADER_DES := des.h, des_old.h
 $ EXHEADER_AES := aes.h
+$ EXHEADER_SM4 := sm4.h
 $ EXHEADER_RC2 := rc2.h
 $ EXHEADER_RC4 := rc4.h
 $ EXHEADER_RC5 := rc5.h
@@ -757,6 +748,7 @@ $ EXHEADER_DSA := dsa.h
 $ EXHEADER_ECDSA := ecdsa.h
 $ EXHEADER_DH := dh.h
 $ EXHEADER_ECDH := ecdh.h
+$ EXHEADER_SM2 := sm2.h
 $ EXHEADER_DSO := dso.h
 $ EXHEADER_ENGINE := engine.h
 $ EXHEADER_BUFFER := buffer.h

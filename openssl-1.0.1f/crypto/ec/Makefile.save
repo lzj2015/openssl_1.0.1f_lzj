@@ -207,7 +207,7 @@ ec_pmeth.o: ../../include/openssl/pkcs7.h ../../include/openssl/safestack.h
 ec_pmeth.o: ../../include/openssl/sha.h ../../include/openssl/stack.h
 ec_pmeth.o: ../../include/openssl/symhacks.h ../../include/openssl/x509.h
 ec_pmeth.o: ../../include/openssl/x509_vfy.h ../cryptlib.h ../evp/evp_locl.h
-ec_pmeth.o: ec_pmeth.c
+ec_pmeth.o: ../../include/openssl/sm2.h ec_pmeth.c
 ec_print.o: ../../include/openssl/asn1.h ../../include/openssl/bio.h
 ec_print.o: ../../include/openssl/bn.h ../../include/openssl/crypto.h
 ec_print.o: ../../include/openssl/e_os2.h ../../include/openssl/ec.h

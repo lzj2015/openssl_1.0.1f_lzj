@@ -877,7 +877,7 @@ int tls1_cert_verify_mac(SSL *s, int md_nid, unsigned char *out)
 
 	for (i=0;i<SSL_MAX_DIGEST;i++) 
 		{
-		  if (s->s3->handshake_dgst[i]&&EVP_MD_CTX_type(s->s3->handshake_dgst[i])==md_nid) 
+		  if (s->s3->handshake_dgst[i] && EVP_MD_CTX_type(s->s3->handshake_dgst[i])==md_nid) 
 		  	{
 		  	d=s->s3->handshake_dgst[i];
 			break;

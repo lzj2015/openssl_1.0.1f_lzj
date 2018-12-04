@@ -199,10 +199,6 @@ typedef struct err_state_st
 #define ERR_LIB_HMAC		48
 #define ERR_LIB_JPAKE		49
 
-# ifndef OPENSSL_NO_SM2
-#  define ERR_LIB_SM2            80
-# endif // !OPENSSL_NO_SM2
-
 #define ERR_LIB_USER		128
 
 #define SYSerr(f,r)  ERR_PUT_error(ERR_LIB_SYS,(f),(r),__FILE__,__LINE__)
@@ -238,10 +234,6 @@ typedef struct err_state_st
 #define TSerr(f,r) ERR_PUT_error(ERR_LIB_TS,(f),(r),__FILE__,__LINE__)
 #define HMACerr(f,r) ERR_PUT_error(ERR_LIB_HMAC,(f),(r),__FILE__,__LINE__)
 #define JPAKEerr(f,r) ERR_PUT_error(ERR_LIB_JPAKE,(f),(r),__FILE__,__LINE__)
-
-# ifndef OPENSSL_NO_SM2
-#  define SM2err(f,r) ERR_PUT_error(ERR_LIB_SM2,(f),(r),__FILE__,__LINE__)
-# endif // !OPENSSL_NO_SM2
 
 /* Borland C seems too stupid to be able to shift and do longs in
  * the pre-processor :-( */
@@ -298,9 +290,6 @@ typedef struct err_state_st
 #define ERR_R_ECDH_LIB  ERR_LIB_ECDH	 /* 43 */
 #define ERR_R_STORE_LIB ERR_LIB_STORE    /* 44 */
 #define ERR_R_TS_LIB	ERR_LIB_TS       /* 45 */
-# ifndef OPENSSL_NO_SM2
-#  define ERR_R_SM2_LIB    ERR_LIB_SM2/* 80 */
-# endif // !OPENSSL_NO_SM2
 
 #define ERR_R_NESTED_ASN1_ERROR			58
 #define ERR_R_BAD_ASN1_OBJECT_HEADER		59

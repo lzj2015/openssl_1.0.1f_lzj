@@ -199,7 +199,9 @@ static int nid_list[] =
 		NID_secp256k1, /* secp256k1 (22) */ 
 		NID_X9_62_prime256v1, /* secp256r1 (23) */ 
 		NID_secp384r1, /* secp384r1 (24) */
-		NID_secp521r1  /* secp521r1 (25) */	
+		NID_secp521r1,  /* secp521r1 (25) */	
+        NID_sm2 /* SM2 (26)*/
+
 	};
 
 static int pref_list[] =
@@ -212,6 +214,7 @@ static int pref_list[] =
 		NID_secp384r1, /* secp384r1 (24) */
 		NID_sect283k1, /* sect283k1 (9) */
 		NID_sect283r1, /* sect283r1 (10) */ 
+		NID_sm2, 	   /* SM2 (26)*/
 		NID_secp256k1, /* secp256k1 (22) */ 
 		NID_X9_62_prime256v1, /* secp256r1 (23) */ 
 		NID_sect239k1, /* sect239k1 (8) */ 
@@ -295,6 +298,8 @@ int tls1_ec_nid2curve_id(int nid)
 		return 24;
 	case NID_secp521r1:  /* secp521r1 (25) */	
 		return 25;
+	case NID_sm2:  /* SM2 (26) */	
+		return 26;
 	default:
 		return 0;
 		}
@@ -342,6 +347,10 @@ static unsigned char tls12_sigalgs[] = {
 #ifndef OPENSSL_NO_SHA
 	tlsext_sigalg(TLSEXT_hash_sha1)
 #endif
+#ifndef OPENSSL_NO_SM2
+    TLSEXT_hash_sm3, TLSEXT_signature_sm2sign,
+#endif
+
 };
 
 int tls12_get_req_sig_algs(SSL *s, unsigned char *p)
@@ -1747,7 +1756,7 @@ int ssl_prepare_clienthello_tlsext(SSL *s)
 
 		alg_k = c->algorithm_mkey;
 		alg_a = c->algorithm_auth;
-		if ((alg_k & (SSL_kEECDH|SSL_kECDHr|SSL_kECDHe) || (alg_a & SSL_aECDSA)))
+		if ((alg_k & (SSL_kEECDH|SSL_kECDHr|SSL_kECDHe|SSL_kSM2DH) || (alg_a & (SSL_aECDSA|SSL_aSM2))))
 			{
 			using_ecc = 1;
 			break;
@@ -1832,7 +1841,7 @@ int ssl_prepare_serverhello_tlsext(SSL *s)
 
 	unsigned long alg_k = s->s3->tmp.new_cipher->algorithm_mkey;
 	unsigned long alg_a = s->s3->tmp.new_cipher->algorithm_auth;
-	int using_ecc = (alg_k & (SSL_kEECDH|SSL_kECDHr|SSL_kECDHe)) || (alg_a & SSL_aECDSA);
+	int using_ecc = (alg_k & (SSL_kEECDH|SSL_kECDHr|SSL_kECDHe|SSL_kSM2DH)) || (alg_a & (SSL_aECDSA|SSL_aSM2));
 	using_ecc = using_ecc && (s->session->tlsext_ecpointformatlist != NULL);
 	
 	if (using_ecc)
@@ -2027,7 +2036,7 @@ int ssl_check_serverhello_tlsext(SSL *s)
 	unsigned long alg_a = s->s3->tmp.new_cipher->algorithm_auth;
 	if ((s->tlsext_ecpointformatlist != NULL) && (s->tlsext_ecpointformatlist_length > 0) && 
 	    (s->session->tlsext_ecpointformatlist != NULL) && (s->session->tlsext_ecpointformatlist_length > 0) && 
-	    ((alg_k & (SSL_kEECDH|SSL_kECDHr|SSL_kECDHe)) || (alg_a & SSL_aECDSA)))
+	    ((alg_k & (SSL_kEECDH|SSL_kECDHr|SSL_kECDHe|SSL_kSM2DH)) || (alg_a & (SSL_aECDSA|SSL_aSM2))))
 		{
 		/* we are using an ECC cipher */
 		size_t i;
@@ -2369,6 +2378,9 @@ static tls12_lookup tls12_md[] = {
 #ifndef OPENSSL_NO_MD5
 	{NID_md5, TLSEXT_hash_md5},
 #endif
+#ifndef OPENSSL_NO_SM3
+    {NID_sm3, TLSEXT_hash_sm3},
+#endif // !OPENSSL_NO_CNSM	
 #ifndef OPENSSL_NO_SHA
 	{NID_sha1, TLSEXT_hash_sha1},
 #endif
@@ -2389,6 +2401,9 @@ static tls12_lookup tls12_sig[] = {
 #ifndef OPENSSL_NO_DSA
 	{EVP_PKEY_DSA, TLSEXT_signature_dsa},
 #endif
+#ifndef OPENSSL_NO_SM2
+	{EVP_PKEY_SM2, TLSEXT_signature_sm2sign},
+#endif		
 #ifndef OPENSSL_NO_ECDSA
 	{EVP_PKEY_EC, TLSEXT_signature_ecdsa}
 #endif
@@ -2436,7 +2451,13 @@ int tls12_get_sigandhash(unsigned char *p, const EVP_PKEY *pk, const EVP_MD *md)
 
 int tls12_get_sigid(const EVP_PKEY *pk)
 	{
-	return tls12_find_id(pk->type, tls12_sig,
+		int type = 0;
+		type = pk->type;
+#ifndef OPENSSL_NO_SM2
+		if (type ==EVP_PKEY_EC && EC_GROUP_get_curve_name(EC_KEY_get0_group(pk->pkey.ec)) == NID_sm2)
+			type = EVP_PKEY_SM2;
+#endif	
+	return tls12_find_id(type, tls12_sig,
 				sizeof(tls12_sig)/sizeof(tls12_lookup));
 	}
 
@@ -2462,6 +2483,10 @@ const EVP_MD *tls12_get_hash(unsigned char hash_alg)
 		case TLSEXT_hash_sha512:
 		return EVP_sha512();
 #endif
+#ifndef OPENSSL_NO_SM3
+    	case TLSEXT_hash_sm3:
+        return EVP_sm3();
+#endif 
 		default:
 		return NULL;
 
@@ -2486,6 +2511,7 @@ int tls1_process_sigalgs(SSL *s, const unsigned char *data, int dsize)
 	c->pkeys[SSL_PKEY_RSA_SIGN].digest = NULL;
 	c->pkeys[SSL_PKEY_RSA_ENC].digest = NULL;
 	c->pkeys[SSL_PKEY_ECC].digest = NULL;
+	c->pkeys[SSL_PKEY_SM2].digest = NULL;
 
 	for (i = 0; i < dsize; i += 2)
 		{
@@ -2506,6 +2532,11 @@ int tls1_process_sigalgs(SSL *s, const unsigned char *data, int dsize)
 #ifndef OPENSSL_NO_ECDSA
 			case TLSEXT_signature_ecdsa:
 			idx = SSL_PKEY_ECC;
+			break;
+#endif
+#ifndef OPENSSL_NO_SM2
+			case TLSEXT_signature_sm2sign:
+			idx = SSL_PKEY_SM2;
 			break;
 #endif
 			default:
@@ -2544,6 +2575,11 @@ int tls1_process_sigalgs(SSL *s, const unsigned char *data, int dsize)
 	if (!c->pkeys[SSL_PKEY_ECC].digest)
 		c->pkeys[SSL_PKEY_ECC].digest = EVP_sha1();
 #endif
+#ifndef OPENSSL_NO_SM2
+     if (!c->pkeys[SSL_PKEY_SM2].digest)
+        c->pkeys[SSL_PKEY_SM2].digest = EVP_sm3();
+#endif
+
 	return 1;
 	}
 

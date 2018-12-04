@@ -266,6 +266,9 @@ extern "C" {
 #define TLSEXT_signature_rsa				1
 #define TLSEXT_signature_dsa				2
 #define TLSEXT_signature_ecdsa				3
+# ifndef OPENSSL_NO_SM2
+#  define TLSEXT_signature_sm2sign                       7
+# endif
 
 #define TLSEXT_hash_none				0
 #define TLSEXT_hash_md5					1
@@ -274,6 +277,9 @@ extern "C" {
 #define TLSEXT_hash_sha256				4
 #define TLSEXT_hash_sha384				5
 #define TLSEXT_hash_sha512				6
+# ifndef OPENSSL_NO_SM3
+#  define TLSEXT_hash_sm3                                7
+# endif // !OPENSSL_NO_SM3
 
 #ifndef OPENSSL_NO_TLSEXT
 
@@ -475,6 +481,8 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
 #define TLS1_CK_ECDH_RSA_WITH_AES_128_CBC_SHA           0x0300C00E
 #define TLS1_CK_ECDH_RSA_WITH_AES_256_CBC_SHA           0x0300C00F
 
+
+
 #define TLS1_CK_ECDHE_RSA_WITH_NULL_SHA                 0x0300C010
 #define TLS1_CK_ECDHE_RSA_WITH_RC4_128_SHA              0x0300C011
 #define TLS1_CK_ECDHE_RSA_WITH_DES_192_CBC3_SHA         0x0300C012
@@ -519,6 +527,8 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
 #define TLS1_CK_ECDH_RSA_WITH_AES_128_GCM_SHA256        0x0300C031
 #define TLS1_CK_ECDH_RSA_WITH_AES_256_GCM_SHA384        0x0300C032
 
+#define TLS1_CK_SM2DH_WITH_SM4_SM3                 0x0300E011
+
 /* XXX
  * Inconsistency alert:
  * The OpenSSL names of ciphers with ephemeral DH here include the string
@@ -526,6 +536,10 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
  * (The alias for the list of all such ciphers also is "EDH".)
  * The specifications speak of "EDH"; maybe we should allow both forms
  * for everything. */
+
+#define TLS1_TXT_SM2DH_WITH_SM4_SM3            "SM2DH-WITH-SM4-SM3"
+
+
 #define TLS1_TXT_RSA_EXPORT1024_WITH_RC4_56_MD5		"EXP1024-RC4-MD5"
 #define TLS1_TXT_RSA_EXPORT1024_WITH_RC2_CBC_56_MD5	"EXP1024-RC2-CBC-MD5"
 #define TLS1_TXT_RSA_EXPORT1024_WITH_DES_CBC_SHA	"EXP1024-DES-CBC-SHA"

@@ -161,6 +161,12 @@
 #ifndef OPENSSL_NO_DSA
 #include <openssl/dsa.h>
 #endif
+#ifndef OPENSSL_NO_SM2
+#include <openssl/sm2.h>
+#endif
+#ifndef OPENSSL_NO_SM3
+#include <openssl/sm3.h>
+#endif
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/symhacks.h>
@@ -299,6 +305,8 @@
 #define SSL_kPSK		0x00000100L /* PSK */
 #define SSL_kGOST       0x00000200L /* GOST key exchange */
 #define SSL_kSRP        0x00000400L /* SRP */
+#define SSL_kSM2DH     0x00001000L /* SM2 KAP */
+
 
 /* Bits for algorithm_auth (server authentication) */
 #define SSL_aRSA		0x00000001L /* RSA auth */
@@ -311,6 +319,7 @@
 #define SSL_aPSK                0x00000080L /* PSK auth */
 #define SSL_aGOST94				0x00000100L /* GOST R 34.10-94 signature auth */
 #define SSL_aGOST01 			0x00000200L /* GOST R 34.10-2001 signature auth */
+#define SSL_aSM2                0x00000400U  /* SM2 auth */
 
 
 /* Bits for algorithm_enc (symmetric encryption) */
@@ -332,6 +341,10 @@
 #define SSL_AES        		(SSL_AES128|SSL_AES256|SSL_AES128GCM|SSL_AES256GCM)
 #define SSL_CAMELLIA		(SSL_CAMELLIA128|SSL_CAMELLIA256)
 
+#ifndef OPENSSL_NO_SM4
+#define SSL_SM4                0x00004000L
+#endif // !OPENSSL_NO_SM4
+
 
 /* Bits for algorithm_mac (symmetric authentication) */
 
@@ -343,6 +356,9 @@
 #define SSL_SHA384		0x00000020L
 /* Not a real MAC, just an indication it is part of cipher */
 #define SSL_AEAD		0x00000040L
+#ifndef OPENSSL_NO_SM3
+# define SSL_SM3        0x00000080L
+#endif // !OPENSSL_NO_SM3
 
 /* Bits for algorithm_ssl (protocol version) */
 #define SSL_SSLV2		0x00000001L
@@ -359,10 +375,18 @@
 #define SSL_HANDSHAKE_MAC_SHA256 0x80
 #define SSL_HANDSHAKE_MAC_SHA384 0x100
 #define SSL_HANDSHAKE_MAC_DEFAULT (SSL_HANDSHAKE_MAC_MD5 | SSL_HANDSHAKE_MAC_SHA)
+#ifndef OPENSSL_NO_SM3
+# define SSL_HANDSHAKE_MAC_SM3 0x200
+# endif // !OPENSSL_NO_SM3
 
 /* When adding new digest in the ssl_ciph.c and increment SSM_MD_NUM_IDX
  * make sure to update this constant too */
-#define SSL_MAX_DIGEST 6
+#ifndef OPENSSL_NO_SM3
+# define SSL_MAX_DIGEST 7
+#else 
+# define SSL_MAX_DIGEST 6
+#endif // !OPENSSL_NO_SM3
+
 
 #define TLS1_PRF_DGST_MASK	(0xff << TLS1_PRF_DGST_SHIFT)
 
@@ -373,6 +397,9 @@
 #define TLS1_PRF_SHA384 (SSL_HANDSHAKE_MAC_SHA384 << TLS1_PRF_DGST_SHIFT)
 #define TLS1_PRF_GOST94 (SSL_HANDSHAKE_MAC_GOST94 << TLS1_PRF_DGST_SHIFT)
 #define TLS1_PRF (TLS1_PRF_MD5 | TLS1_PRF_SHA1)
+#ifndef OPENSSL_NO_SM3
+#  define TLS1_PRF_SM3 (SSL_HANDSHAKE_MAC_SM3 << TLS1_PRF_DGST_SHIFT)
+#endif // !OPENSSL_NO_SM3
 
 /* Stream MAC for GOST ciphersuites from cryptopro draft
  * (currently this also goes into algorithm2) */
@@ -452,7 +479,13 @@
 #define SSL_PKEY_ECC            5
 #define SSL_PKEY_GOST94		6
 #define SSL_PKEY_GOST01		7
-#define SSL_PKEY_NUM		8
+#ifndef OPENSSL_NO_SM2
+# define SSL_PKEY_SM2           8
+# define SSL_PKEY_NUM           9
+#else 
+# define SSL_PKEY_NUM            8
+#endif // !OPENSSL_NO_SM2
+
 
 /* SSL_kRSA <- RSA_ENC | (RSA_TMP & RSA_SIGN) |
  * 	    <- (EXPORT & (RSA_ENC | RSA_TMP) & RSA_SIGN)
@@ -507,7 +540,7 @@ typedef struct cert_st
 	DH *dh_tmp;
 	DH *(*dh_tmp_cb)(SSL *ssl,int is_export,int keysize);
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	EC_KEY *ecdh_tmp;
 	/* Callback for generating ephemeral ECDH keys */
 	EC_KEY *(*ecdh_tmp_cb)(SSL *ssl,int is_export,int keysize);
@@ -537,7 +570,7 @@ typedef struct sess_cert_st
 #ifndef OPENSSL_NO_DH
 	DH *peer_dh_tmp; /* not used for SSL 2 */
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	EC_KEY *peer_ecdh_tmp;
 #endif
 
@@ -808,6 +841,8 @@ const SSL_METHOD *func_name(void)  \
 	}; \
 	return &func_name##_data; \
 	}
+
+
 
 void ssl_clear_cipher_ctx(SSL *s);
 int ssl_clear_bad_session(SSL *s);
@@ -1083,7 +1118,7 @@ int tls1_alert_code(int code);
 int ssl3_alert_code(int code);
 int ssl_ok(SSL *s);
 
-#ifndef OPENSSL_NO_ECDH
+#ifndef OPENSSL_NO_EC
 int ssl_check_srvr_ecc_cert_and_alg(X509 *x, SSL *s);
 #endif
 

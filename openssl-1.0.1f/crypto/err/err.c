@@ -156,9 +156,6 @@ static ERR_STRING_DATA ERR_str_libraries[]=
 {ERR_PACK(ERR_LIB_FIPS,0,0)		,"FIPS routines"},
 {ERR_PACK(ERR_LIB_CMS,0,0)		,"CMS routines"},
 {ERR_PACK(ERR_LIB_HMAC,0,0)		,"HMAC routines"},
-# ifndef OPENSSL_NO_SM2
-    {ERR_PACK(ERR_LIB_SM2, 0, 0), "SM2 routines"},
-# endif // !OPENSSL_NO_SM2
 {0,NULL},
 	};
 
@@ -206,10 +203,6 @@ static ERR_STRING_DATA ERR_str_reasons[]=
 {ERR_R_ENGINE_LIB			,"ENGINE lib"},
 {ERR_R_OCSP_LIB				,"OCSP lib"},
 {ERR_R_TS_LIB				,"TS lib"},
-
-# ifndef OPENSSL_NO_SM2
-    {ERR_R_SM2_LIB, "SM2 lib"},
-#endif // !OPENSSL_NO_SM2
 
 {ERR_R_NESTED_ASN1_ERROR		,"nested asn1 error"},
 {ERR_R_BAD_ASN1_OBJECT_HEADER		,"bad asn1 object header"},

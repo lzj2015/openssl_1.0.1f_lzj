@@ -829,11 +829,6 @@ sub var_add
 	#@a=grep(!/(^s2_)|(^s23_)/,@a) if $no_ssl2;
 	#@a=grep(!/(^s3_)|(^s23_)/,@a) if $no_ssl3;
 
-	#China SM
-	@a=grep(!/(^sm3)|(_sm3$)/,@a) if $no_sm3;
-	@a=grep(!/(^sm4)|(_sm4$)/,@a) if $no_sm4;
-	@a=grep(!/(^sm2)|(_sm2$)/,@a) if $no_sm2;
-
 	@a=grep(!/(_sock$)|(_acpt$)|(_conn$)|(^pxy_)/,@a) if $no_sock;
 
 	@a=grep(!/(^md2)|(_md2$)/,@a) if $no_md2;
@@ -870,6 +865,12 @@ sub var_add
 	grep($_="$dir/$_",@a);
 	@a=grep(!/(^|\/)s_/,@a) if $no_sock;
 	@a=grep(!/(^|\/)bio_sock/,@a) if $no_sock;
+
+	#China SM
+	@a=grep(!/(^sm3)|(_sm3$)/,@a) if $no_sm3;
+	@a=grep(!/(^sm4)|(_sm4$)/,@a) if $no_sm4;
+	@a=grep(!/(^sm2)|(_sm2$)/,@a) if $no_sm2;
+
 	$ret=join(' ',@a)." ";
 	return($ret);
 	}

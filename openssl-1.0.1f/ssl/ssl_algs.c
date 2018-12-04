@@ -104,12 +104,22 @@ int SSL_library_init(void)
 #ifndef OPENSSL_NO_SEED
 	EVP_add_cipher(EVP_seed_cbc());
 #endif
+
+#ifndef OPENSSL_NO_SM4
+	EVP_add_cipher(EVP_sm4_cbc());
+#endif
   
 #ifndef OPENSSL_NO_MD5
 	EVP_add_digest(EVP_md5());
 	EVP_add_digest_alias(SN_md5,"ssl2-md5");
 	EVP_add_digest_alias(SN_md5,"ssl3-md5");
 #endif
+
+#ifndef OPENSSL_NO_SM3
+	EVP_add_digest(EVP_sm3());
+	EVP_add_digest_alias(SN_sm3,"ssl3-sm3");
+#endif
+
 #ifndef OPENSSL_NO_SHA
 	EVP_add_digest(EVP_sha1()); /* RSA with sha1 */
 	EVP_add_digest_alias(SN_sha1,"ssl3-sha1");

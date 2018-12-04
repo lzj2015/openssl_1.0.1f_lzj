@@ -479,7 +479,7 @@ int ssl3_accept(SSL *s)
 			    || (alg_k & SSL_kSRP)
 #endif
 			    || (alg_k & (SSL_kDHr|SSL_kDHd|SSL_kEDH))
-			    || (alg_k & SSL_kEECDH)
+			    || (alg_k & (SSL_kEECDH|SSL_kSM2DH))
 			    || ((alg_k & SSL_kRSA)
 				&& (s->cert->pkeys[SSL_PKEY_RSA_ENC].privatekey == NULL
 				    || (SSL_C_IS_EXPORT(s->s3->tmp.new_cipher)
@@ -900,7 +900,7 @@ int ssl3_check_client_hello(SSL *s)
 			s->s3->tmp.dh = NULL;
 			}
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2) 
 		if (s->s3->tmp.ecdh != NULL)
 			{
 			EC_KEY_free(s->s3->tmp.ecdh);
@@ -1558,7 +1558,7 @@ int ssl3_send_server_key_exchange(SSL *s)
 #ifndef OPENSSL_NO_DH
 	DH *dh=NULL,*dhp;
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2) 
 	EC_KEY *ecdh=NULL, *ecdhp;
 	unsigned char *encodedPoint = NULL;
 	int encodedlen = 0;
@@ -1673,8 +1673,9 @@ int ssl3_send_server_key_exchange(SSL *s)
 			}
 		else 
 #endif
-#ifndef OPENSSL_NO_ECDH
-			if (type & SSL_kEECDH)
+
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2) 
+			if (type & (SSL_kEECDH|SSL_kSM2DH))
 			{
 			const EC_GROUP *group;
 
@@ -1799,6 +1800,8 @@ int ssl3_send_server_key_exchange(SSL *s)
 			}
 		else 
 #endif /* !OPENSSL_NO_ECDH */
+
+
 #ifndef OPENSSL_NO_PSK
 			if (type & SSL_kPSK)
 				{
@@ -1881,8 +1884,8 @@ int ssl3_send_server_key_exchange(SSL *s)
 			p+=nr[i];
 			}
 
-#ifndef OPENSSL_NO_ECDH
-		if (type & SSL_kEECDH) 
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2) 
+		if (type & (SSL_kEECDH|SSL_kSM2DH)) 
 			{
 			/* XXX: For now, we only support named (not generic) curves.
 			 * In this situation, the serverKeyExchange message has:
@@ -2011,7 +2014,7 @@ int ssl3_send_server_key_exchange(SSL *s)
 f_err:
 	ssl3_send_alert(s,SSL3_AL_FATAL,al);
 err:
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2) 
 	if (encodedPoint != NULL) OPENSSL_free(encodedPoint);
 	BN_CTX_free(bn_ctx);
 #endif
@@ -2134,10 +2137,21 @@ int ssl3_get_client_key_exchange(SSL *s)
 	KSSL_ERR kssl_err;
 #endif /* OPENSSL_NO_KRB5 */
 
+#ifndef OPENSSL_NO_SM2
+	unsigned char *client_z = NULL;
+	unsigned char *server_z = NULL;
+	unsigned char *client_id = NULL;
+	unsigned char *server_id = NULL;
+	size_t client_id_len = 0, server_id_len = 0;
+#endif
+
 #ifndef OPENSSL_NO_ECDH
 	EC_KEY *srvr_ecdh = NULL;
-	EVP_PKEY *clnt_pub_pkey = NULL;
+#endif
+
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2) 
 	EC_POINT *clnt_ecpoint = NULL;
+	EVP_PKEY *clnt_pub_pkey = NULL;
 	BN_CTX *bn_ctx = NULL; 
 #endif
 
@@ -2515,7 +2529,162 @@ int ssl3_get_client_key_exchange(SSL *s)
 		}
 	else
 #endif	/* OPENSSL_NO_KRB5 */
+#ifndef OPENSSL_NO_SM2
+		if (alg_k & SSL_kSM2DH)
+		{
+		int ret = 1;
+		const EC_GROUP *group = NULL;
+		X509 *server_x509 = NULL,*client_x509 = NULL;
+		EC_KEY *server_pk = NULL, *server_rpk = NULL, *client_pk = NULL;
+		int field_size = 0 , md_size = 0;
+		const EVP_MD *md = NULL;
+		/*get SERVER pk*/
+		if((s->cert->pkeys[SSL_PKEY_SM2].privatekey == NULL)
+			|| (s->cert->pkeys[SSL_PKEY_SM2].privatekey->pkey.ec == NULL))
+			{
+			SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_INTERNAL_ERROR);
+			goto err;
+			}
+		server_pk = s->cert->pkeys[SSL_PKEY_SM2].privatekey->pkey.ec;
 
+		md = s->cert->pkeys[SSL_PKEY_SM2].digest;
+		md_size = EVP_MD_size(md);
+		group = EC_KEY_get0_group(server_pk);
+		field_size = EC_GROUP_get_degree(group);
+		if (field_size <= 0) 
+			{
+            SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_ECDH_LIB);
+            goto err;
+            }
+        /*server r key*/
+        server_rpk = s->s3->tmp.ecdh;
+		/*server cert*/
+		if ((server_x509 = s->cert->pkeys[SSL_PKEY_SM2].x509) == NULL)
+			{
+			SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_INTERNAL_ERROR);
+			goto err;
+			}
+		/*get server id*/
+		if ((server_id = (unsigned char *)X509_NAME_oneline(X509_get_subject_name(server_x509), NULL, 0)) 
+					== NULL) 
+			{
+			SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_INTERNAL_ERROR);
+			goto err;
+			}
+		server_id_len = strlen((char *)server_id);
+
+		server_z = OPENSSL_malloc(md_size);
+		if (server_z == NULL)
+			{
+			SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_INTERNAL_ERROR);
+			goto err;
+			}
+
+		if(!sm2_compute_z_digest(server_z, md, server_id, server_id_len, server_pk))
+			{
+			SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_INTERNAL_ERROR);
+			goto err;
+			}
+
+		/*client part*/
+		/*client cert*/
+		if ((client_x509 = s->session->peer) == NULL)
+			{
+			SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_INTERNAL_ERROR);
+			goto err;
+			}
+		/*client's pkey*/
+		clnt_pub_pkey = X509_get_pubkey(client_x509);
+		if ((clnt_pub_pkey == NULL) 
+				|| (clnt_pub_pkey->type != EVP_PKEY_EC) 
+				|| (clnt_pub_pkey->pkey.ec == NULL))
+				{
+				SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_INTERNAL_ERROR);
+				goto err;
+				}
+		client_pk = clnt_pub_pkey->pkey.ec;
+		/*get client id*/
+		if ((client_id = ((unsigned char *)X509_NAME_oneline(X509_get_subject_name(client_x509), NULL, 0))) == NULL) 
+			{
+			SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_INTERNAL_ERROR);
+			goto err;
+			}
+		client_id_len = strlen((char *)client_id);
+		client_z = OPENSSL_malloc(md_size);
+		if (client_z == NULL)
+			{
+			SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_INTERNAL_ERROR);
+			goto err;
+			}
+		if(!sm2_compute_z_digest(client_z, md, client_id, client_id_len, client_pk))
+			{
+			SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_INTERNAL_ERROR);
+			goto err;
+			}
+
+		/* Let's get client's r key */
+        if ((clnt_ecpoint = EC_POINT_new(group)) == NULL) {
+            SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_MALLOC_FAILURE);
+            goto err;
+        }
+		if ((bn_ctx = BN_CTX_new()) == NULL) 
+			{
+            SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE,
+                    ERR_R_MALLOC_FAILURE);
+            goto err;
+            }
+        /* Get encoded point length */
+        i = *p;
+        p += 1;
+        if (n != 1 + i) 
+        	{
+            SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, SSL_R_LENGTH_MISMATCH);
+            al = SSL_AD_DECODE_ERROR;
+            goto f_err;
+            }
+        if (EC_POINT_oct2point(group, clnt_ecpoint, p, i, bn_ctx) == 0) 
+        	{
+            SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_EC_LIB);
+            al = SSL_AD_HANDSHAKE_FAILURE;
+            goto f_err;
+        }
+        /*
+         * p is pointing to somewhere in the buffer currently, so set it
+         * to the start
+         */
+        p = (unsigned char *)s->init_buf->data;
+
+        i = sm2_compute_key(p, (field_size + 7) / 8, clnt_ecpoint, server_rpk,
+					server_pk, EC_KEY_get0_public_key(client_pk), server_z, md_size, client_z, md_size, md);
+
+		if (i <= 0)
+			{
+            SSLerr(SSL_F_SSL3_GET_CLIENT_KEY_EXCHANGE, ERR_R_ECDH_LIB);
+          	goto err;
+            }
+		
+        EVP_PKEY_free(clnt_pub_pkey);
+        EC_POINT_free(clnt_ecpoint);
+        BN_CTX_free(bn_ctx);
+        EC_KEY_free(s->s3->tmp.ecdh);
+        s->s3->tmp.ecdh = NULL;
+        if (client_z != NULL) OPENSSL_free(client_z);
+		if (client_id != NULL) OPENSSL_free(client_id);
+		if (server_z != NULL) OPENSSL_free(server_z);
+		if (server_id != NULL) OPENSSL_free(server_id);
+
+        /* Compute the master secret */
+        s->session->master_key_length =
+            s->method->ssl3_enc->generate_master_secret(s,
+                                                        s->
+                                                        session->master_key,
+                                                        p, i);
+
+        OPENSSL_cleanse(p, i);
+		return(ret);
+		}
+	else
+#endif /*OPENSSL_NO_SM2*/
 #ifndef OPENSSL_NO_ECDH
 		if (alg_k & (SSL_kEECDH|SSL_kECDHr|SSL_kECDHe))
 		{
@@ -2891,11 +3060,18 @@ f_err:
 #if !defined(OPENSSL_NO_DH) || !defined(OPENSSL_NO_RSA) || !defined(OPENSSL_NO_ECDH) || defined(OPENSSL_NO_SRP)
 err:
 #endif
+#ifndef OPENSSL_NO_SM2
+if (client_z != NULL) OPENSSL_free(client_z);
+if (client_id != NULL) OPENSSL_free(client_id);
+if (server_z != NULL) OPENSSL_free(server_z);
+if (server_id != NULL) OPENSSL_free(server_id);
+#endif
 #ifndef OPENSSL_NO_ECDH
-	EVP_PKEY_free(clnt_pub_pkey);
+if (srvr_ecdh != NULL) EC_KEY_free(srvr_ecdh);
+#endif
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2) 
 	EC_POINT_free(clnt_ecpoint);
-	if (srvr_ecdh != NULL) 
-		EC_KEY_free(srvr_ecdh);
+	EVP_PKEY_free(clnt_pub_pkey);
 	BN_CTX_free(bn_ctx);
 #endif
 	return(-1);
@@ -2917,8 +3093,9 @@ int ssl3_get_cert_verify(SSL *s)
 		SSL3_ST_SR_CERT_VRFY_A,
 		SSL3_ST_SR_CERT_VRFY_B,
 		-1,
-		516, /* Enough for 4096 bit RSA key with TLS v1.2 */
+		SSL3_RT_MAX_PLAIN_LENGTH, 
 		&ok);
+
 
 	if (!ok) return((int)n);
 
@@ -3090,6 +3267,21 @@ fprintf(stderr, "USING TLSv1.2 HASH %s\n", EVP_MD_name(md));
 			/* bad signature */
 			al=SSL_AD_DECRYPT_ERROR;
 			SSLerr(SSL_F_SSL3_GET_CERT_VERIFY,SSL_R_BAD_DSA_SIGNATURE);
+			goto f_err;
+			}
+		}
+	else
+#endif
+#ifndef OPENSSL_NO_SM2	
+		if (pkey->type == EVP_PKEY_EC && EC_GROUP_get_curve_name(EC_KEY_get0_group(EVP_PKEY_get0(pkey))) == NID_sm2)
+		{
+		j=sm2_verify((unsigned char *)(&(s->s3->tmp.cert_verify_md)),
+			SM3_DIGEST_LENGTH, p, i, pkey->pkey.ec);
+		if (j <= 0)
+			{
+			al=SSL_AD_DECRYPT_ERROR;
+			SSLerr(SSL_F_SSL3_GET_CERT_VERIFY,
+			    SSL_R_BAD_ECDSA_SIGNATURE);
 			goto f_err;
 			}
 		}

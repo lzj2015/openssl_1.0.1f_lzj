@@ -57,6 +57,9 @@
 
 #include <openssl/md5.h>
 #include <openssl/sha.h>
+#ifndef OPENSSL_NO_SM3
+# include <openssl/sm3.h>
+#endif // !OPENSSL_NO_SM3
 
 /* MAX_HASH_BIT_COUNT_BYTES is the maximum number of bytes in the hash's length
  * field. (SHA-384/512 have 128-bit length.) */
@@ -356,6 +359,7 @@ static void tls1_sha1_final_raw(void* ctx, unsigned char *md_out)
 	l2n(sha1->h3, md_out);
 	l2n(sha1->h4, md_out);
 	}
+
 #define LARGEST_DIGEST_CTX SHA_CTX
 
 #ifndef OPENSSL_NO_SHA256
@@ -372,6 +376,22 @@ static void tls1_sha256_final_raw(void* ctx, unsigned char *md_out)
 #undef  LARGEST_DIGEST_CTX
 #define LARGEST_DIGEST_CTX SHA256_CTX
 #endif
+
+
+#ifndef OPENSSL_NO_SM3
+static void tls1_sm3_final_raw(void *ctx, unsigned char *md_out)
+	{
+    SM3_CTX *sm3ctx = ctx;
+    unsigned i;
+    for (i = 0; i < 8; i++)
+    	{
+        l2n(sm3ctx->digest[i], md_out);
+    	}
+	}
+# undef  LARGEST_DIGEST_CTX
+# define LARGEST_DIGEST_CTX SM3_CTX
+#endif // !OPENSSL_NO_SM3
+
 
 #ifndef OPENSSL_NO_SHA512
 static void tls1_sha512_final_raw(void* ctx, unsigned char *md_out)
@@ -404,6 +424,9 @@ char ssl3_cbc_record_digest_supported(const EVP_MD_CTX *ctx)
 		case NID_sha224:
 		case NID_sha256:
 #endif
+#ifndef OPENSSL_NO_SM3
+    case NID_sm3:
+#endif // !OPENSSL_NO_SM3
 #ifndef OPENSSL_NO_SHA512
 		case NID_sha384:
 		case NID_sha512:
@@ -500,6 +523,14 @@ void ssl3_cbc_digest_record(
 			md_size = 32;
 			break;
 #endif
+#ifndef OPENSSL_NO_SM3
+    case NID_sm3:
+        SM3_Init((SM3_CTX *)md_state.c);
+        md_final_raw = tls1_sm3_final_raw;
+        md_transform = (void(*)(void *ctx, const unsigned char *block))SM3_Transform;
+        md_size = 32;
+        break;
+#endif // !OPENSSL_NO_SM3
 #ifndef OPENSSL_NO_SHA512
 		case NID_sha384:
 			SHA384_Init((SHA512_CTX*)md_state.c);

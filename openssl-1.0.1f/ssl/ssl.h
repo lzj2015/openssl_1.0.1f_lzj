@@ -154,6 +154,7 @@
 #ifndef OPENSSL_NO_DEPRECATED
 #ifndef OPENSSL_NO_X509
 #include <openssl/x509.h>
+#include <openssl/x509v3.h>
 #endif
 #include <openssl/crypto.h>
 #include <openssl/lhash.h>
@@ -253,6 +254,10 @@ extern "C" {
 #define SSL_TXT_kPSK            "kPSK"
 #define SSL_TXT_kGOST		"kGOST"
 #define SSL_TXT_kSRP		"kSRP"
+#ifndef OPENSSL_NO_SM2
+#define SSL_TXT_kSM2           "kSM2"/* China TLSv1.1 */
+#define SSL_TXT_kSM2DH         "kSM2DH"/* China TLSv1.1 */
+#endif // !OPENSSL_NO_SM2
 
 #define	SSL_TXT_aRSA		"aRSA"
 #define	SSL_TXT_aDSS		"aDSS"
@@ -261,9 +266,13 @@ extern "C" {
 #define SSL_TXT_aKRB5     	"aKRB5"
 #define SSL_TXT_aECDSA		"aECDSA"
 #define SSL_TXT_aPSK            "aPSK"
-#define SSL_TXT_aGOST94	"aGOST94"
-#define SSL_TXT_aGOST01 "aGOST01"
-#define SSL_TXT_aGOST  "aGOST"
+#define SSL_TXT_aGOST94	     "aGOST94"
+#define SSL_TXT_aGOST01      "aGOST01"
+#define SSL_TXT_aGOST        "aGOST"
+#ifndef OPENSSL_NO_SM2
+#define SSL_TXT_aSM2         "aSM2"
+#endif // !OPENSSL_NO_SM2
+
 
 #define	SSL_TXT_DSS		"DSS"
 #define SSL_TXT_DH		"DH"
@@ -277,6 +286,10 @@ extern "C" {
 #define SSL_TXT_KRB5      	"KRB5"
 #define SSL_TXT_PSK             "PSK"
 #define SSL_TXT_SRP		"SRP"
+#ifndef OPENSSL_NO_SM2
+#define SSL_TXT_ECC          "ECC"
+#define SSL_TXT_SM2DH        "SM2DH"
+#endif // !OPENSSL_NO_SM2
 
 #define SSL_TXT_DES		"DES"
 #define SSL_TXT_3DES		"3DES"
@@ -291,6 +304,10 @@ extern "C" {
 #define SSL_TXT_CAMELLIA128	"CAMELLIA128"
 #define SSL_TXT_CAMELLIA256	"CAMELLIA256"
 #define SSL_TXT_CAMELLIA	"CAMELLIA"
+#ifndef OPENSSL_NO_SM4
+#define SSL_TXT_SM4            "SM4"/* China TLSv1.1 */
+#define SSL_TXT_SM4GCM         "SM4GCM"
+#endif // !OPENSSL_NO_SM4
 
 #define SSL_TXT_MD5		"MD5"
 #define SSL_TXT_SHA1		"SHA1"
@@ -299,6 +316,9 @@ extern "C" {
 #define SSL_TXT_GOST89MAC		"GOST89MAC" 
 #define SSL_TXT_SHA256		"SHA256"
 #define SSL_TXT_SHA384		"SHA384"
+#ifndef OPENSSL_NO_SM3
+# define SSL_TXT_SM3            "SM3"/* China TLSv1.1 */
+#endif // !OPENSSL_NO_SM3
 
 #define SSL_TXT_SSLV2		"SSLv2"
 #define SSL_TXT_SSLV3		"SSLv3"
@@ -1741,6 +1761,7 @@ int	SSL_add_dir_cert_subjects_to_stack(STACK_OF(X509_NAME) *stackCAs,
 
 #endif
 
+
 void	SSL_load_error_strings(void );
 const char *SSL_state_string(const SSL *s);
 const char *SSL_rstate_string(const SSL *s);
@@ -2018,7 +2039,7 @@ void SSL_set_tmp_dh_callback(SSL *ssl,
 				 DH *(*dh)(SSL *ssl,int is_export,
 					   int keylength));
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 void SSL_CTX_set_tmp_ecdh_callback(SSL_CTX *ctx,
 				 EC_KEY *(*ecdh)(SSL *ssl,int is_export,
 					   int keylength));

@@ -13,10 +13,6 @@ sha512WithRSAEncryption	sha512	rsaEncryption
 sha224WithRSAEncryption	sha224	rsaEncryption
 mdc2WithRSA		mdc2	rsaEncryption
 ripemd160WithRSA	ripemd160 rsaEncryption
-
-#China SM serial algorism
-sm3WithRSAEncryption    sm3             rsaEncryption
-
 # For PSS the digest algorithm can vary and depends on the included
 # AlgorithmIdentifier. The digest "undef" indicates the public key
 # method should handle this explicitly.
@@ -27,14 +23,13 @@ rsassaPss		undef	rsaEncryption
 
 md5WithRSA		md5	rsa
 sha1WithRSA		sha1	rsa
+#China SM serial algorism
+sm3WithRSA              sm3             rsa
 
 dsaWithSHA		sha	dsa
 dsaWithSHA1		sha1	dsa
 
 dsaWithSHA1_2		sha1	dsa_2
-
-#China SM serial algorism
-sm3WithRSA              sm3             rsa
 
 ecdsa_with_SHA1		sha1	X9_62_id_ecPublicKey
 ecdsa_with_SHA224	sha224	X9_62_id_ecPublicKey

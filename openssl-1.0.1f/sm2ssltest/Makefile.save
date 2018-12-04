@@ -1,0 +1,140 @@
+#
+# sm2ssltest/Makefile
+#
+
+DIR=		sm2ssltest
+TOP=		..
+CC=		cc
+INCLUDES=	-I$(TOP) -I../include $(KRB5_INCLUDES)
+CFLAG=		-g
+MAKEDEPEND=	$(TOP)/util/domd $(TOP) -MD $(MAKEDEPPROG)
+PERL=		perl
+# KRB5 stuff
+KRB5_INCLUDES=
+LIBKRB5=
+
+PEX_LIBS=
+EX_LIBS= #-lnsl -lsocket
+
+CFLAGS= $(INCLUDES) $(CFLAG)
+
+GENERAL=Makefile maketests.com \
+	tests.com testenc.com tx509.com trsa.com tcrl.com tsid.com treq.com \
+	tpkcs7.com tpkcs7d.com tverify.com testgen.com testss.com testssl.com \
+	testca.com VMSca-response.1 VMSca-response.2
+
+DLIBCRYPTO= ../libcrypto.a
+DLIBSSL= ../libssl.a
+LIBCRYPTO= -L.. -lcrypto
+LIBSSL= -L.. -lssl
+
+
+SM3TEST=	sm2ssltest
+
+
+TESTS=		alltests
+
+EXE=	$(SM3TEST)$(EXE_EXT) \
+	
+
+# $(METHTEST)$(EXE_EXT)
+
+OBJ=	$(SM3TEST).o 
+SRC=	$(SM3TEST).c
+	
+
+EXHEADER= 
+HEADER=	$(EXHEADER)
+
+ALL=    $(GENERAL) $(SRC) $(HEADER)
+
+top:
+	(cd ..; $(MAKE) DIRS=$(DIR) TESTS=$(TESTS) all)
+
+all:	exe
+
+exe:	$(EXE)
+
+files:
+	$(PERL) $(TOP)/util/files.pl Makefile >> $(TOP)/MINFO
+
+links:
+
+errors:
+
+install:
+
+tags:
+	ctags $(SRC)
+
+tests:	exe apps $(TESTS)
+
+apps:
+	@(cd ..; $(MAKE) DIRS=apps all)
+
+alltests: \
+	 test_sm3 
+
+
+test_sm3:
+	../util/shlib_wrap.sh ./$(SM3TEST)
+
+
+
+lint:
+	lint -DLINT $(INCLUDES) $(SRC)>fluff
+
+depend:
+	@if [ -z "$(THIS)" ]; then \
+	    $(MAKE) -f $(TOP)/Makefile reflect THIS=$@; \
+	else \
+	    $(MAKEDEPEND) -- $(CFLAG) $(INCLUDES) $(DEPFLAG) -- $(PROGS) $(SRC); \
+	fi
+
+dclean:
+	$(PERL) -pe 'if (/^# DO NOT DELETE THIS LINE/) {print; exit(0);}' $(MAKEFILE) >Makefile.new
+	mv -f Makefile.new $(MAKEFILE)
+	rm -f $(SRC) $(SHA256TEST).c $(SHA512TEST).c evptests.txt newkey.pem testkey.pem \
+			testreq.pem
+
+clean:
+	rm -f .rnd tmp.bntest tmp.bctest *.o *.obj *.dll lib tags core .pure .nfs* *.old *.bak fluff $(EXE) *.ss *.srl log 
+
+
+$(DLIBSSL):
+	(cd ..; $(MAKE) DIRS=ssl all)
+
+$(DLIBCRYPTO):
+	(cd ..; $(MAKE) DIRS=crypto all)
+
+BUILD_CMD=shlib_target=; if [ -n "$(SHARED_LIBS)" ]; then \
+		shlib_target="$(SHLIB_TARGET)"; \
+	fi; \
+	LIBRARIES="$(LIBSSL) $(LIBCRYPTO) $(LIBKRB5)"; \
+	$(MAKE) -f $(TOP)/Makefile.shared -e \
+		CC="$${CC}" APPNAME=$$target$(EXE_EXT) OBJECTS="$$target.o" \
+		LIBDEPS="$(PEX_LIBS) $$LIBRARIES $(EX_LIBS)" \
+		link_app.$${shlib_target}
+
+FIPS_BUILD_CMD=shlib_target=; if [ -n "$(SHARED_LIBS)" ]; then \
+		shlib_target="$(SHLIB_TARGET)"; \
+	fi; \
+	LIBRARIES="$(LIBSSL) $(LIBCRYPTO) $(LIBKRB5)"; \
+	if [ -z "$(SHARED_LIBS)" -a -n "$(FIPSCANLIB)" ] ; then \
+		FIPSLD_CC="$(CC)"; CC=$(FIPSDIR)/bin/fipsld; export CC FIPSLD_CC; \
+	fi; \
+	$(MAKE) -f $(TOP)/Makefile.shared -e \
+		CC="$${CC}" APPNAME=$$target$(EXE_EXT) OBJECTS="$$target.o" \
+		LIBDEPS="$(PEX_LIBS) $$LIBRARIES $(EX_LIBS)" \
+		link_app.$${shlib_target}
+
+
+
+$(SM3TEST)$(EXE_EXT): $(SM3TEST).o $(DLIBCRYPTO)
+	@target=$(SM3TEST); $(BUILD_CMD)
+
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+sm3test.o: sm2ssltest.c
+

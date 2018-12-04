@@ -173,6 +173,10 @@ static void ssl_cert_set_default_md(CERT *cert)
 #ifndef OPENSSL_NO_ECDSA
 	cert->pkeys[SSL_PKEY_ECC].digest = EVP_sha1();
 #endif
+
+#if !defined(OPENSSL_NO_SM2) || !defined(OPENSSL_NO_SM3)
+	cert->pkeys[SSL_PKEY_SM2].digest = EVP_sm3();
+#endif
 	}
 
 CERT *ssl_cert_new(void)
@@ -259,7 +263,7 @@ CERT *ssl_cert_dup(CERT *cert)
 	ret->dh_tmp_cb = cert->dh_tmp_cb;
 #endif
 
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	if (cert->ecdh_tmp)
 		{
 		ret->ecdh_tmp = EC_KEY_dup(cert->ecdh_tmp);
@@ -308,8 +312,12 @@ CERT *ssl_cert_dup(CERT *cert)
 				break;
 
 			case SSL_PKEY_ECC:
+#ifndef OPENSSL_NO_SM2
+			case SSL_PKEY_SM2:
+#endif
 				/* We have an ECC key */
 				break;
+
 
 			default:
 				/* Can't happen. */
@@ -329,7 +337,7 @@ CERT *ssl_cert_dup(CERT *cert)
 
 	return(ret);
 	
-#if !defined(OPENSSL_NO_DH) || !defined(OPENSSL_NO_ECDH)
+#if !defined(OPENSSL_NO_DH) || !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 err:
 #endif
 #ifndef OPENSSL_NO_RSA
@@ -340,7 +348,7 @@ err:
 	if (ret->dh_tmp != NULL)
 		DH_free(ret->dh_tmp);
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	if (ret->ecdh_tmp != NULL)
 		EC_KEY_free(ret->ecdh_tmp);
 #endif
@@ -383,7 +391,7 @@ void ssl_cert_free(CERT *c)
 #ifndef OPENSSL_NO_DH
 	if (c->dh_tmp) DH_free(c->dh_tmp);
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	if (c->ecdh_tmp) EC_KEY_free(c->ecdh_tmp);
 #endif
 
@@ -492,7 +500,7 @@ void ssl_sess_cert_free(SESS_CERT *sc)
 	if (sc->peer_dh_tmp != NULL)
 		DH_free(sc->peer_dh_tmp);
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	if (sc->peer_ecdh_tmp != NULL)
 		EC_KEY_free(sc->peer_ecdh_tmp);
 #endif

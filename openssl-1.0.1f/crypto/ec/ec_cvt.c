@@ -125,8 +125,9 @@ EC_GROUP *EC_GROUP_new_curve_GFp(const BIGNUM *p, const BIGNUM *a, const BIGNUM 
 			return NULL;
 			}
 			
-		/* not an actual error, we just cannot use EC_GFp_nist_method */
 		
+		/* not an actual error, we just cannot use EC_GFp_nist_method */
+
 		ERR_clear_error();
 
 		EC_GROUP_clear_free(ret);

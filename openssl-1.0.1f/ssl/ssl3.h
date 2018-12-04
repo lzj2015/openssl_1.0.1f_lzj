@@ -496,7 +496,7 @@ typedef struct ssl3_state_st
 		DH *dh;
 #endif
 
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 		EC_KEY *ecdh; /* holds short lived ECDH key */
 #endif
 

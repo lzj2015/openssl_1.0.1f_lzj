@@ -49,7 +49,7 @@ $! NOTE: This list reflects the list of dependencies following the
 $! "alltests" target in Makefile.  This should make it easy to see
 $! if there's a difference that needs to be taken care of.
 $	    tests := -
-	test_des,test_idea,test_sha,test_md4,test_md5,test_sm3,test_sm4,test_sm2,test_hmac,-
+	test_des,test_idea,test_sha,test_md4,test_md5,test_sm3,test_sm4,test_sm2,test_sm2dh,test_hmac,-
 	test_md2,test_mdc2,test_wp,-
 	test_rmd,test_rc2,test_rc4,test_rc5,test_bf,test_cast,test_aes,-
 	test_rand,test_bn,test_ec,test_ecdsa,test_ecdh,-
@@ -78,6 +78,7 @@ $	MD5TEST :=	md5test
 $   SM3TEST :=	sm3test
 $   SM4TEST :=	sm4test
 $   SM2TEST :=	sm2test
+$   SM2DHTEST := sm2dhtest
 $	HMACTEST :=	hmactest
 $	WPTEST :=	wp_test
 $	RC2TEST :=	rc2test
@@ -129,15 +130,20 @@ $	return
 $ test_md5:
 $	mcr 'texe_dir''md5test'
 $	return
-$ test_sm3:
-$	mcr 'texe_dir''sm3test'
-$ test_sm2:
-$	mcr 'texe_dir''sm2test'
-$ test_sm4:
-$	mcr 'texe_dir''sm4test'
-$	return
 $ test_md4:
 $	mcr 'texe_dir''md4test'
+$	return
+$ test_sm3:
+$	mcr 'texe_dir''sm3test'
+$	return
+$ test_sm2:
+$	mcr 'texe_dir''sm2test'
+$	return
+$ test_sm2dh:
+$	mcr 'texe_dir''sm2dhtest'
+$	return
+$ test_sm4:
+$	mcr 'texe_dir''sm4test'
 $	return
 $ test_hmac:
 $	mcr 'texe_dir''hmactest'

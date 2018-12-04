@@ -109,14 +109,11 @@ $! thereby making it fairly easy to verify that the lists are the same.
 $!
 $ ET_WHIRLPOOL = "WHRLPOOL"
 $ IF ARCH .EQS. "VAX" THEN ET_WHIRLPOOL = ""
-$!
-$! China SM
-$!
 $ ENCRYPT_TYPES = "Basic,"+ -
 		  "OBJECTS,"+ -
-		  "SM3,MD2,MD4,MD5,SHA,MDC2,HMAC,RIPEMD,"+ET_WHIRLPOOL+","+ -
-		  "SM4,DES,AES,RC2,RC4,RC5,IDEA,BF,CAST,CAMELLIA,SEED,MODES,"+ -
-		  "SM2,BN,EC,RSA,DSA,ECDSA,DH,ECDH,DSO,ENGINE,"+ -
+		  "MD2,MD4,MD5,SM3,SHA,MDC2,HMAC,RIPEMD,"+ET_WHIRLPOOL+","+ -
+		  "DES,AES,SM4,RC2,RC4,RC5,IDEA,BF,CAST,CAMELLIA,SEED,MODES,"+ -
+		  "BN,EC,RSA,DSA,ECDSA,DH,ECDH,SM2,DSO,ENGINE,"+ -
 		  "BUFFER,BIO,STACK,LHASH,RAND,ERR,"+ -
 		  "EVP,EVP_2,EVP_3,ASN1,ASN1_2,PEM,X509,X509V3,"+ -
 		  "CONF,TXT_DB,PKCS7,PKCS12,COMP,OCSP,UI,KRB5,"+ -
@@ -212,15 +209,10 @@ $ APPS_PKCS7 = "ENC/ENC;DEC/DEC;SIGN/SIGN;VERIFY/VERIFY,EXAMPLE"
 $
 $ LIB_ = "cryptlib,mem,mem_clr,mem_dbg,cversion,ex_data,cpt_err,"+ -
 	"ebcdic,uid,o_time,o_str,o_dir,o_fips.c,o_init,fips_ers"
-$!
-$! China SM
-$!
-$ LIB_SM3 = "sm3_dgst,sm3_one"
-$ LIB_SM4 = "sm4,sm4_ecb,sm4_cbc,sm4_cfb,sm4_ofb"
-$ LIB_SM2 = "sm2_err,sm2_crypt,sm2_sign"
 $ LIB_MD2 = "md2_dgst,md2_one"
 $ LIB_MD4 = "md4_dgst,md4_one"
 $ LIB_MD5 = "md5_dgst,md5_one"
+$ LIB_SM3 = "sm3_dgst,sm3_one,m_sm3"
 $ LIB_SHA = "sha_dgst,sha1dgst,sha_one,sha1_one,sha256,sha512"
 $ LIB_MDC2 = "mdc2dgst,mdc2_one"
 $ LIB_HMAC = "hmac,hm_ameth,hm_pmeth"
@@ -257,6 +249,7 @@ $ LIB_EC = "ec_lib,ecp_smpl,ecp_mont,ecp_nist,ec_cvt,ec_mult,"+ -
 	"ec2_smpl,ec2_mult,ec_ameth,ec_pmeth,eck_prn,"+ -
 	"ecp_nistp224,ecp_nistp256,ecp_nistp521,ecp_nistputil,"+ -
 	"ecp_oct,ec2_oct,ec_oct"
+$ LIB_SM2 = "sm2_err,sm2_crypt,sm2_sign,sm2_dh,sm2_pmeth"
 $ LIB_RSA = "rsa_eay,rsa_gen,rsa_lib,rsa_sign,rsa_saos,rsa_err,"+ -
 	"rsa_pk1,rsa_ssl,rsa_none,rsa_oaep,rsa_chk,rsa_null,"+ -
 	"rsa_pss,rsa_x931,rsa_asn1,rsa_depr,rsa_ameth,rsa_prn,"+ -
@@ -277,6 +270,8 @@ $ LIB_ENGINE = "eng_err,eng_lib,eng_list,eng_init,eng_ctrl,"+ -
 	"eng_rsax,eng_rdrand"
 $ LIB_AES = "aes_core,aes_misc,aes_ecb,aes_cbc,aes_cfb,aes_ofb,aes_ctr,"+ -
 	"aes_ige,aes_wrap"
+$ LIB_SM4 = "sm4,sm4_cbc,sm4_cfb,sm4_ofb,sm4_gcm,sm4_ctr,sm4_wrap,"+ -
+	"e_sm4"
 $ LIB_BUFFER = "buffer,buf_str,buf_err"
 $ LIB_BIO = "bio_lib,bio_cb,bio_err,"+ -
 	"bss_mem,bss_null,bss_fd,"+ -
@@ -294,11 +289,8 @@ $ LIB_OBJECTS = "o_names,obj_dat,obj_lib,obj_err,obj_xref"
 $ LIB_EVP = "encode,digest,evp_enc,evp_key,evp_acnf,evp_cnf,"+ -
 	"e_des,e_bf,e_idea,e_des3,e_camellia,"+ -
 	"e_rc4,e_aes,names,e_seed,"+ -
-	"e_xcbc_d,e_rc2,e_cast,e_rc5,e_sm4"
-$!
-$! China SM
-$!
-$ LIB_EVP_2 = "m_null,m_sm3,m_md2,m_md4,m_md5,m_sha,m_sha1,m_wp," + -
+	"e_xcbc_d,e_rc2,e_cast,e_rc5"
+$ LIB_EVP_2 = "m_null,m_md2,m_md4,m_md5,m_sha,m_sha1,m_wp," + -
 	"m_dss,m_dss1,m_mdc2,m_ripemd,m_ecdsa,"+ -
 	"p_open,p_seal,p_sign,p_verify,p_lib,p_enc,p_dec,"+ -
 	"bio_md,bio_b64,bio_enc,evp_err,e_null,"+ -
@@ -374,11 +366,8 @@ $ COMPILEWITH_CC3 = ",bss_rtcp,"
 $ ! Disable the DOLLARID warning.  Not needed with /STANDARD=RELAXED.
 $ COMPILEWITH_CC4 = "" !!! ",a_utctm,bss_log,o_time,o_dir,"
 $ ! Disable disjoint optimization on VAX with DECC.
-$!
-$! China SM
-$!
 $ COMPILEWITH_CC5 = ",md2_dgst,md4_dgst,md5_dgst,mdc2dgst,sm3_dgst," + -
-                    "seed,sha_dgst,sha1dgst,rmd_dgst,bf_enc,sm4,"
+                    "seed,sha_dgst,sha1dgst,rmd_dgst,bf_enc,sm4"
 $ ! Disable the MIXLINKAGE warning.
 $ COMPILEWITH_CC6 = "" !!! ",enc_read,set_key,"
 $!

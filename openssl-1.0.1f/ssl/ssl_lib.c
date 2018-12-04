@@ -2018,9 +2018,11 @@ void ssl_set_cert_masks(CERT *c, const SSL_CIPHER *cipher)
 	int rsa_tmp_export,dh_tmp_export,kl;
 	unsigned long mask_k,mask_a,emask_k,emask_a;
 	int have_ecc_cert, ecdh_ok, ecdsa_ok, ecc_pkey_size;
-#ifndef OPENSSL_NO_ECDH
+	int have_sm2_cert, sm2_ok, sm2dsa_ok;
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	int have_ecdh_tmp;
 #endif
+
 	X509 *x = NULL;
 	EVP_PKEY *ecc_pkey = NULL;
 	int signature_nid = 0, pk_nid = 0, md_nid = 0;
@@ -2044,7 +2046,7 @@ void ssl_set_cert_masks(CERT *c, const SSL_CIPHER *cipher)
 	dh_tmp=dh_tmp_export=0;
 #endif
 
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	have_ecdh_tmp=(c->ecdh_tmp != NULL || c->ecdh_tmp_cb != NULL);
 #endif
 	cpk= &(c->pkeys[SSL_PKEY_RSA_ENC]);
@@ -2061,19 +2063,23 @@ void ssl_set_cert_masks(CERT *c, const SSL_CIPHER *cipher)
 /* FIX THIS EAY EAY EAY */
 	dh_dsa=  (cpk->x509 != NULL && cpk->privatekey != NULL);
 	dh_dsa_export=(dh_dsa && EVP_PKEY_size(cpk->privatekey)*8 <= kl);
+
 	cpk= &(c->pkeys[SSL_PKEY_ECC]);
 	have_ecc_cert= (cpk->x509 != NULL && cpk->privatekey != NULL);
+
+	cpk= &(c->pkeys[SSL_PKEY_SM2]);
+	have_sm2_cert= (cpk->x509 != NULL && cpk->privatekey != NULL);
+
 	mask_k=0;
 	mask_a=0;
 	emask_k=0;
 	emask_a=0;
 
 	
-
 #ifdef CIPHER_DEBUG
-	printf("rt=%d rte=%d dht=%d ecdht=%d re=%d ree=%d rs=%d ds=%d dhr=%d dhd=%d\n",
+	printf("rt=%d rte=%d dht=%d ecdht=%d re=%d ree=%d rs=%d ds=%d dhr=%d dhd=%d  sm2=%d\n",
 	        rsa_tmp,rsa_tmp_export,dh_tmp,have_ecdh_tmp,
-		rsa_enc,rsa_enc_export,rsa_sign,dsa_sign,dh_rsa,dh_dsa);
+		rsa_enc,rsa_enc_export,rsa_sign,dsa_sign,dh_rsa,dh_dsa,have_sm2_cert);
 #endif
 	
 	cpk = &(c->pkeys[SSL_PKEY_GOST01]);
@@ -2193,11 +2199,60 @@ void ssl_set_cert_masks(CERT *c, const SSL_CIPHER *cipher)
 #endif
 		}
 
+#ifndef OPENSSL_NO_SM2
+	if (have_sm2_cert)
+		{
+		/* This call populates extension flags (ex_flags) */
+		x = (c->pkeys[SSL_PKEY_SM2]).x509;
+		X509_check_purpose(x, -1, 0);
+		sm2_ok = (x->ex_flags & EXFLAG_KUSAGE) ?
+			(x->ex_kusage & X509v3_KU_KEY_AGREEMENT) : 1;
+		sm2dsa_ok = (x->ex_flags & EXFLAG_KUSAGE) ?
+			(x->ex_kusage & X509v3_KU_DIGITAL_SIGNATURE) : 1;
+		ecc_pkey = X509_get_pubkey(x);
+		ecc_pkey_size = (ecc_pkey != NULL) ?
+			EVP_PKEY_bits(ecc_pkey) : 0;
+		EVP_PKEY_free(ecc_pkey);
+		if ((x->sig_alg) && (x->sig_alg->algorithm))
+			{
+			signature_nid = OBJ_obj2nid(x->sig_alg->algorithm);
+			OBJ_find_sigid_algs(signature_nid, &md_nid, &pk_nid);
+			}
+
+		if (sm2_ok)
+			{
+			if (pk_nid == NID_X9_62_id_ecPublicKey)
+				{
+				mask_k|=SSL_kSM2DH;
+				mask_a|=SSL_aSM2;
+				if (ecc_pkey_size <= 163)
+					{
+					emask_k|=SSL_kSM2DH;
+					emask_a|=SSL_aSM2;
+					}
+				}
+			}
+		if (sm2dsa_ok)
+			{
+			mask_a|=SSL_aSM2;
+			emask_a|=SSL_aSM2;
+			}
+		}
+#endif
+
 #ifndef OPENSSL_NO_ECDH
-	if (have_ecdh_tmp)
+	if (have_ecdh_tmp && have_ecc_cert)
 		{
 		mask_k|=SSL_kEECDH;
 		emask_k|=SSL_kEECDH;
+		}
+#endif
+
+#ifndef OPENSSL_NO_SM2
+	if (have_ecdh_tmp && have_sm2_cert)
+		{
+		mask_k|=SSL_kSM2DH;
+		emask_k|=SSL_kSM2DH;
 		}
 #endif
 
@@ -2277,7 +2332,7 @@ int ssl_check_srvr_ecc_cert_and_alg(X509 *x, SSL *s)
 				}
 			}
 		}
-	if (alg_a & SSL_aECDSA)
+	if (alg_a & (SSL_aECDSA | SSL_aSM2))
 		{
 		/* key usage, if present, must allow signing */
 		if (ku_reject(x, X509v3_KU_DIGITAL_SIGNATURE))
@@ -2324,6 +2379,16 @@ CERT_PKEY *ssl_get_server_send_pkey(const SSL *s)
 		{
 		i=SSL_PKEY_ECC;
 		}
+#ifndef OPENSSL_NO_SM2
+	else if (alg_a & SSL_aSM2)
+		{
+		i=SSL_PKEY_SM2;
+		}
+	else if (alg_k & SSL_kSM2DH)
+		{
+		i=SSL_PKEY_SM2;
+		}
+#endif
 	else if (alg_k & SSL_kDHr)
 		i=SSL_PKEY_DH_RSA;
 	else if (alg_k & SSL_kDHd)
@@ -2386,6 +2451,13 @@ EVP_PKEY *ssl_get_sign_pkey(SSL *s,const SSL_CIPHER *cipher, const EVP_MD **pmd)
 	else if ((alg_a & SSL_aECDSA) &&
 	         (c->pkeys[SSL_PKEY_ECC].privatekey != NULL))
 		idx = SSL_PKEY_ECC;
+#ifndef OPENSSL_NO_SM2
+	else if ((alg_a & SSL_aSM2) &&
+	         (c->pkeys[SSL_PKEY_SM2].privatekey != NULL))
+		{
+		idx = SSL_PKEY_SM2;
+		}
+#endif
 	if (idx == -1)
 		{
 		SSLerr(SSL_F_SSL_GET_SIGN_PKEY,ERR_R_INTERNAL_ERROR);
@@ -3110,7 +3182,7 @@ void SSL_set_tmp_dh_callback(SSL *ssl,DH *(*dh)(SSL *ssl,int is_export,
 	}
 #endif
 
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 void SSL_CTX_set_tmp_ecdh_callback(SSL_CTX *ctx,EC_KEY *(*ecdh)(SSL *ssl,int is_export,
                                                                 int keylength))
 	{

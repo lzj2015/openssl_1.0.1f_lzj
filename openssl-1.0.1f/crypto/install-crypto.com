@@ -72,14 +72,12 @@ $ if f$parse("wrk_sslinclude:") .eqs. "" then -
 $ if f$parse("wrk_sslxlib:") .eqs. "" then -
    create /directory /log wrk_sslxlib:
 $!
-$! China SM
-$!
 $ sdirs := , -
    'archd', -
    objects, -
-   md2, md4, sm3, md5, sha, mdc2, hmac, ripemd, whrlpool, -
-   des, aes, rc2, rc4, rc5, idea, bf, cast, camellia, seed, sm4, -
-   bn, ec, rsa, dsa, ecdsa, dh, ecdh, dso, engine, sm2, -
+   md2, md4, md5, sm3, sha, mdc2, hmac, ripemd, whrlpool, -
+   des, aes, sm4, rc2, rc4, rc5, idea, bf, cast, camellia, seed, -
+   bn, ec, rsa, dsa, ecdsa, dh, ecdh, sm2, dso, engine, -
    buffer, bio, stack, lhash, rand, err, -
    evp, asn1, pem, x509, x509v3, conf, txt_db, pkcs7, pkcs12, comp, ocsp, -
    ui, krb5, -
@@ -91,13 +89,7 @@ $ exheader_objects := objects.h, obj_mac.h
 $ exheader_md2 := md2.h
 $ exheader_md4 := md4.h
 $ exheader_md5 := md5.h
-$!
-$! China SM
-$!
 $ exheader_sm3 := sm3.h
-$ exheader_sm4 := sm4.h
-$ exheader_sm2 := sm2.h
-$!
 $ exheader_sha := sha.h
 $ exheader_mdc2 := mdc2.h
 $ exheader_hmac := hmac.h
@@ -105,6 +97,7 @@ $ exheader_ripemd := ripemd.h
 $ exheader_whrlpool := whrlpool.h
 $ exheader_des := des.h, des_old.h
 $ exheader_aes := aes.h
+$ exheader_sm4 := sm4.h
 $ exheader_rc2 := rc2.h
 $ exheader_rc4 := rc4.h
 $ exheader_rc5 := rc5.h
@@ -121,6 +114,7 @@ $ exheader_dsa := dsa.h
 $ exheader_ecdsa := ecdsa.h
 $ exheader_dh := dh.h
 $ exheader_ecdh := ecdh.h
+$ exheader_sm2 := sm2.h
 $ exheader_dso := dso.h
 $ exheader_engine := engine.h
 $ exheader_buffer := buffer.h

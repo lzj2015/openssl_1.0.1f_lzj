@@ -43,6 +43,10 @@ RMDTEST=	rmdtest
 MD2TEST=	md2test
 MD4TEST=	md4test
 MD5TEST=	md5test
+SM3TEST=	sm3test
+SM4TEST=	sm4test
+SM2TEST=	sm2test
+SM2DHTEST=	sm2dhtest
 HMACTEST=	hmactest
 WPTEST=		wp_test
 RC2TEST=	rc2test
@@ -67,7 +71,8 @@ ASN1TEST=	asn1test
 TESTS=		alltests
 
 EXE=	$(BNTEST)$(EXE_EXT) $(ECTEST)$(EXE_EXT)  $(ECDSATEST)$(EXE_EXT) $(ECDHTEST)$(EXE_EXT) $(IDEATEST)$(EXE_EXT) \
-	$(MD2TEST)$(EXE_EXT)  $(MD4TEST)$(EXE_EXT) $(MD5TEST)$(EXE_EXT) $(HMACTEST)$(EXE_EXT) $(WPTEST)$(EXE_EXT) \
+	$(MD2TEST)$(EXE_EXT) $(MD4TEST)$(EXE_EXT) $(MD5TEST)$(EXE_EXT) $(SM3TEST)$(EXE_EXT) \
+	$(SM4TEST)$(EXE_EXT) $(SM2TEST)$(EXE_EXT) $(SM2DHTEST)$(EXE_EXT) $(HMACTEST)$(EXE_EXT) $(WPTEST)$(EXE_EXT) \
 	$(RC2TEST)$(EXE_EXT) $(RC4TEST)$(EXE_EXT) $(RC5TEST)$(EXE_EXT) \
 	$(DESTEST)$(EXE_EXT) $(SHATEST)$(EXE_EXT) $(SHA1TEST)$(EXE_EXT) $(SHA256TEST)$(EXE_EXT) $(SHA512TEST)$(EXE_EXT) \
 	$(MDC2TEST)$(EXE_EXT) $(RMDTEST)$(EXE_EXT) \
@@ -79,7 +84,7 @@ EXE=	$(BNTEST)$(EXE_EXT) $(ECTEST)$(EXE_EXT)  $(ECDSATEST)$(EXE_EXT) $(ECDHTEST)
 # $(METHTEST)$(EXE_EXT)
 
 OBJ=	$(BNTEST).o $(ECTEST).o  $(ECDSATEST).o $(ECDHTEST).o $(IDEATEST).o \
-	$(MD2TEST).o $(MD4TEST).o $(MD5TEST).o \
+	$(MD2TEST).o $(MD4TEST).o $(MD5TEST).o $(SM3TEST).o  $(SM4TEST).o $(SM2TEST).o $(SM2DHTEST).o \
 	$(HMACTEST).o $(WPTEST).o \
 	$(RC2TEST).o $(RC4TEST).o $(RC5TEST).o \
 	$(DESTEST).o $(SHATEST).o $(SHA1TEST).o $(SHA256TEST).o $(SHA512TEST).o \
@@ -88,7 +93,7 @@ OBJ=	$(BNTEST).o $(ECTEST).o  $(ECDSATEST).o $(ECDHTEST).o $(IDEATEST).o \
 	$(BFTEST).o  $(SSLTEST).o  $(DSATEST).o  $(EXPTEST).o $(RSATEST).o \
 	$(EVPTEST).o $(IGETEST).o $(JPAKETEST).o $(ASN1TEST).o
 SRC=	$(BNTEST).c $(ECTEST).c  $(ECDSATEST).c $(ECDHTEST).c $(IDEATEST).c \
-	$(MD2TEST).c  $(MD4TEST).c $(MD5TEST).c \
+	$(MD2TEST).c  $(MD4TEST).c $(MD5TEST).c $(SM3TEST).c $(SM4TEST).c $(SM2TEST).c $(SM2DHTEST).c \
 	$(HMACTEST).c $(WPTEST).c \
 	$(RC2TEST).c $(RC4TEST).c $(RC5TEST).c \
 	$(DESTEST).c $(SHATEST).c $(SHA1TEST).c $(MDC2TEST).c $(RMDTEST).c \
@@ -130,8 +135,8 @@ apps:
 	@(cd ..; $(MAKE) DIRS=apps all)
 
 alltests: \
-	test_des test_idea test_sha test_md4 test_md5 test_hmac \
-	test_md2 test_mdc2 test_wp \
+	test_des test_idea test_sha test_md4 test_md5 test_sm3 test_sm4 test_sm2  test_sm2dh\
+	test_hmac test_md2 test_mdc2 test_wp \
 	test_rmd test_rc2 test_rc4 test_rc5 test_bf test_cast test_aes \
 	test_rand test_bn test_ec test_ecdsa test_ecdh \
 	test_enc test_x509 test_rsa test_crl test_sid \
@@ -162,6 +167,18 @@ test_md5:
 
 test_md4:
 	../util/shlib_wrap.sh ./$(MD4TEST)
+
+test_sm3:
+	../util/shlib_wrap.sh ./$(SM3TEST)
+
+test_sm4:
+	../util/shlib_wrap.sh ./$(SM4TEST)
+
+test_sm2:
+	../util/shlib_wrap.sh ./$(SM2TEST)
+
+test_sm2dh:
+	../util/shlib_wrap.sh ./$(SM2DHTEST)
 
 test_hmac:
 	../util/shlib_wrap.sh ./$(HMACTEST)
@@ -337,6 +354,10 @@ dclean:
 clean:
 	rm -f .rnd tmp.bntest tmp.bctest *.o *.obj *.dll lib tags core .pure .nfs* *.old *.bak fluff $(EXE) *.ss *.srl log dummytest
 
+testclean:
+	rm -f $(SRC) $(SHA256TEST).c $(SHA512TEST).c evptests.txt newkey.pem testkey.pem \
+			testreq.pem
+
 $(DLIBSSL):
 	(cd ..; $(MAKE) DIRS=ssl all)
 
@@ -405,6 +426,18 @@ $(MD4TEST)$(EXE_EXT): $(MD4TEST).o $(DLIBCRYPTO)
 
 $(MD5TEST)$(EXE_EXT): $(MD5TEST).o $(DLIBCRYPTO)
 	@target=$(MD5TEST); $(BUILD_CMD)
+
+$(SM3TEST)$(EXE_EXT): $(SM3TEST).o $(DLIBCRYPTO)
+	@target=$(SM3TEST); $(BUILD_CMD)
+
+$(SM2TEST)$(EXE_EXT): $(SM2TEST).o $(DLIBCRYPTO)
+	@target=$(SM2TEST); $(BUILD_CMD)
+
+$(SM2DHTEST)$(EXE_EXT): $(SM2DHTEST).o $(DLIBCRYPTO)
+	@target=$(SM2DHTEST); $(BUILD_CMD)
+
+$(SM4TEST)$(EXE_EXT): $(SM4TEST).o $(DLIBCRYPTO)
+	@target=$(SM4TEST); $(BUILD_CMD)
 
 $(HMACTEST)$(EXE_EXT): $(HMACTEST).o $(DLIBCRYPTO)
 	@target=$(HMACTEST); $(BUILD_CMD)
@@ -641,6 +674,44 @@ md5test.o: ../include/openssl/obj_mac.h ../include/openssl/objects.h
 md5test.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
 md5test.o: ../include/openssl/ossl_typ.h ../include/openssl/safestack.h
 md5test.o: ../include/openssl/stack.h ../include/openssl/symhacks.h md5test.c
+sm3test.o: ../e_os.h ../include/openssl/asn1.h ../include/openssl/bio.h
+sm3test.o: ../include/openssl/crypto.h ../include/openssl/e_os2.h
+sm3test.o: ../include/openssl/evp.h ../include/openssl/sm3.h
+sm3test.o: ../include/openssl/obj_mac.h ../include/openssl/objects.h
+sm3test.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
+sm3test.o: ../include/openssl/ossl_typ.h ../include/openssl/safestack.h
+sm3test.o: ../include/openssl/stack.h ../include/openssl/symhacks.h sm3test.c
+sm4test.o: ../e_os.h ../include/openssl/asn1.h ../include/openssl/bio.h
+sm4test.o: ../include/openssl/crypto.h ../include/openssl/e_os2.h
+sm4test.o: ../include/openssl/evp.h ../include/openssl/sm4.h
+sm4test.o: ../include/openssl/obj_mac.h ../include/openssl/objects.h
+sm4test.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
+sm4test.o: ../include/openssl/ossl_typ.h ../include/openssl/safestack.h
+sm4test.o: ../include/openssl/stack.h ../include/openssl/symhacks.h sm4test.c
+sm2test.o: ../e_os.h ../include/openssl/asn1.h ../include/openssl/bio.h
+sm2test.o: ../include/openssl/bn.h ../include/openssl/buffer.h
+sm2test.o: ../include/openssl/crypto.h ../include/openssl/e_os2.h
+sm2test.o: ../include/openssl/ec.h ../include/openssl/ecdh.h
+sm2test.o: ../include/openssl/ecdsa.h ../include/openssl/engine.h
+sm2test.o: ../include/openssl/err.h ../include/openssl/evp.h
+sm2test.o: ../include/openssl/lhash.h ../include/openssl/obj_mac.h
+sm2test.o: ../include/openssl/objects.h ../include/openssl/opensslconf.h
+sm2test.o: ../include/openssl/opensslv.h ../include/openssl/ossl_typ.h
+sm2test.o: ../include/openssl/pkcs7.h ../include/openssl/rand.h
+sm2test.o: ../include/openssl/safestack.h ../include/openssl/sha.h
+sm2test.o: ../include/openssl/stack.h ../include/openssl/symhacks.h
+sm2test.o: ../include/openssl/sm2.h
+sm2test.o: ../include/openssl/x509.h ../include/openssl/x509_vfy.h sm2test.c
+sm2dhtest.o: ../e_os.h ../include/openssl/asn1.h ../include/openssl/bio.h
+sm2dhtest.o: ../include/openssl/bn.h ../include/openssl/crypto.h
+sm2dhtest.o: ../include/openssl/e_os2.h ../include/openssl/ec.h
+sm2dhtest.o: ../include/openssl/ecdh.h ../include/openssl/err.h
+sm2dhtest.o: ../include/openssl/lhash.h ../include/openssl/obj_mac.h
+sm2dhtest.o: ../include/openssl/objects.h ../include/openssl/opensslconf.h
+sm2dhtest.o: ../include/openssl/opensslv.h ../include/openssl/ossl_typ.h
+sm2dhtest.o: ../include/openssl/rand.h ../include/openssl/safestack.h
+sm2dhtest.o: ../include/openssl/sha.h ../include/openssl/stack.h
+sm2dhtest.o: ../include/openssl/symhacks.h ../include/openssl/sm2.h sm2dhtest.c
 mdc2test.o: ../e_os.h ../include/openssl/asn1.h ../include/openssl/bio.h
 mdc2test.o: ../include/openssl/crypto.h ../include/openssl/des.h
 mdc2test.o: ../include/openssl/des_old.h ../include/openssl/e_os2.h

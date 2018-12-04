@@ -108,10 +108,6 @@
 #include <openssl/jpake.h>
 #endif
 
-#ifndef OPENSSL_NO_SM2
-# include <openssl/sm2.h>
-#endif // !OPENSSL_NO_SM2
-
 void ERR_load_crypto_strings(void)
 	{
 #ifndef OPENSSL_NO_ERR
@@ -168,8 +164,5 @@ void ERR_load_crypto_strings(void)
 #ifndef OPENSSL_NO_JPAKE
 	ERR_load_JPAKE_strings();
 #endif
-# ifndef OPENSSL_NO_SM2
-    ERR_load_SM2_strings();
-# endif // !OPENSSL_NO_SM2
 #endif
 	}

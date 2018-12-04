@@ -132,7 +132,7 @@ Currently, the logical names supported are:
                         used.  This is good to try if something doesn't work.
       OPENSSL_NO_'alg'  with value YES, the corresponding crypto algorithm
                         will not be implemented.  Supported algorithms to
-                        do this with are: RSA, DSA, DH, MD2, MD4, SM3, SM2, SM4, MD5, RIPEMD,
+                        do this with are: RSA, DSA, DH, MD2, MD4, MD5, RIPEMD,
                         SHA, DES, MDC2, CR2, RC4, RC5, IDEA, BF, CAST, HMAC,
                         SSL2.  So, for example, having the logical name
                         OPENSSL_NO_RSA with the value YES means that the

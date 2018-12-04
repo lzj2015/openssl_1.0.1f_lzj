@@ -1,4 +1,4 @@
-/* crypto/evp/evp.h */
+ /* crypto/evp/evp.h */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -117,6 +117,7 @@
 #define EVP_PKEY_EC	NID_X9_62_id_ecPublicKey
 #define EVP_PKEY_HMAC	NID_hmac
 #define EVP_PKEY_CMAC	NID_cmac
+#define EVP_PKEY_SM2    NID_sm2
 
 #ifdef	__cplusplus
 extern "C" {
@@ -467,6 +468,13 @@ typedef int (EVP_PBE_KEYGEN)(EVP_CIPHER_CTX *ctx, const char *pass, int passlen,
                                         (char *)(eckey))
 #endif
 
+#ifndef OPENSSL_NO_SM2
+#define EVP_PKEY_assign_SM2_KEY(pkey,eckey) EVP_PKEY_assign((pkey),EVP_PKEY_SM2,\
+                                        (char *)(eckey))
+#endif
+
+
+
 /* Add some extra combinations */
 #define EVP_get_digestbynid(a) EVP_get_digestbyname(OBJ_nid2sn(a))
 #define EVP_get_digestbyobj(a) EVP_get_digestbynid(OBJ_obj2nid(a))
@@ -663,7 +671,6 @@ void BIO_set_cipher(BIO *b,const EVP_CIPHER *c,const unsigned char *k,
 		const unsigned char *i, int enc);
 #endif
 
-
 //China SM
 #ifndef OPENSSL_NO_SM3
 const EVP_MD *EVP_sm3(void);
@@ -675,7 +682,6 @@ const EVP_CIPHER *EVP_sm4_ecb(void);
 const EVP_CIPHER *EVP_sm4_ofb(void);
 const EVP_CIPHER *EVP_sm4_ctr(void);
 #endif
-
 
 const EVP_MD *EVP_md_null(void);
 #ifndef OPENSSL_NO_MD2

@@ -2889,6 +2889,23 @@ OPENSSL_GLOBAL SSL_CIPHER ssl3_ciphers[]={
 	},
 #endif
 
+#ifndef OPENSSL_NO_SM2
+	{
+     1,
+     TLS1_TXT_SM2DH_WITH_SM4_SM3,
+     TLS1_CK_SM2DH_WITH_SM4_SM3,
+     SSL_kSM2DH,
+     SSL_aSM2,
+     SSL_SM4,
+     SSL_SM3,
+     SSL_TLSV1,
+     SSL_NOT_EXP | SSL_HIGH,
+     SSL_HANDSHAKE_MAC_SM3 | TLS1_PRF_SM3,
+     128,
+     128,
+    },
+#endif
+
 /* end of list */
 	};
 
@@ -2980,7 +2997,7 @@ void ssl3_free(SSL *s)
 	if (s->s3->tmp.dh != NULL)
 		DH_free(s->s3->tmp.dh);
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	if (s->s3->tmp.ecdh != NULL)
 		EC_KEY_free(s->s3->tmp.ecdh);
 #endif
@@ -3030,7 +3047,7 @@ void ssl3_clear(SSL *s)
 		s->s3->tmp.dh = NULL;
 		}
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	if (s->s3->tmp.ecdh != NULL)
 		{
 		EC_KEY_free(s->s3->tmp.ecdh);
@@ -3101,6 +3118,10 @@ long ssl3_ctrl(SSL *s, int cmd, long larg, void *parg)
 #ifndef OPENSSL_NO_DSA
 	    cmd == SSL_CTRL_SET_TMP_DH ||
 	    cmd == SSL_CTRL_SET_TMP_DH_CB ||
+#endif
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
+	    cmd == SSL_CTRL_SET_TMP_ECDH ||
+	    cmd == SSL_CTRL_SET_TMP_ECDH_CB ||
 #endif
 		0)
 		{
@@ -3201,7 +3222,7 @@ long ssl3_ctrl(SSL *s, int cmd, long larg, void *parg)
 		}
 		break;
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	case SSL_CTRL_SET_TMP_ECDH:
 		{
 		EC_KEY *ecdh = NULL;
@@ -3373,6 +3394,9 @@ long ssl3_callback_ctrl(SSL *s, int cmd, void (*fp)(void))
 #ifndef OPENSSL_NO_DSA
 	    cmd == SSL_CTRL_SET_TMP_DH_CB ||
 #endif
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
+	    cmd == SSL_CTRL_SET_TMP_ECDH_CB ||
+#endif
 		0)
 		{
 		if (!ssl_cert_inst(&s->cert))
@@ -3399,7 +3423,7 @@ long ssl3_callback_ctrl(SSL *s, int cmd, void (*fp)(void))
 		}
 		break;
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	case SSL_CTRL_SET_TMP_ECDH_CB:
 		{
 		s->cert->ecdh_tmp_cb = (EC_KEY *(*)(SSL *, int, int))fp;
@@ -3504,7 +3528,7 @@ long ssl3_ctx_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
 		}
 		break;
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	case SSL_CTRL_SET_TMP_ECDH:
 		{
 		EC_KEY *ecdh = NULL;
@@ -3670,7 +3694,7 @@ long ssl3_ctx_callback_ctrl(SSL_CTX *ctx, int cmd, void (*fp)(void))
 		}
 		break;
 #endif
-#ifndef OPENSSL_NO_ECDH
+#if !defined(OPENSSL_NO_ECDH) || !defined(OPENSSL_NO_SM2)
 	case SSL_CTRL_SET_TMP_ECDH_CB:
 		{
 		cert->ecdh_tmp_cb = (EC_KEY *(*)(SSL *, int, int))fp;
@@ -3815,7 +3839,6 @@ SSL_CIPHER *ssl3_choose_cipher(SSL *s, STACK_OF(SSL_CIPHER) *clnt,
 		if ((c->algorithm_ssl & SSL_TLSV1_2) && 
 			(TLS1_get_version(s) < TLS1_2_VERSION))
 			continue;
-
 		ssl_set_cert_masks(cert,c);
 		mask_k = cert->mask_k;
 		mask_a = cert->mask_a;
@@ -3865,111 +3888,112 @@ SSL_CIPHER *ssl3_choose_cipher(SSL *s, STACK_OF(SSL_CIPHER) *clnt,
 
 #ifndef OPENSSL_NO_TLSEXT
 #ifndef OPENSSL_NO_EC
-		if (
-			/* if we are considering an ECC cipher suite that uses our certificate */
-			(alg_a & SSL_aECDSA || alg_a & SSL_aECDH)
-			/* and we have an ECC certificate */
-			&& (s->cert->pkeys[SSL_PKEY_ECC].x509 != NULL)
-			/* and the client specified a Supported Point Formats extension */
-			&& ((s->session->tlsext_ecpointformatlist_length > 0) && (s->session->tlsext_ecpointformatlist != NULL))
-			/* and our certificate's point is compressed */
-			&& (
-				(s->cert->pkeys[SSL_PKEY_ECC].x509->cert_info != NULL)
-				&& (s->cert->pkeys[SSL_PKEY_ECC].x509->cert_info->key != NULL)
-				&& (s->cert->pkeys[SSL_PKEY_ECC].x509->cert_info->key->public_key != NULL)
-				&& (s->cert->pkeys[SSL_PKEY_ECC].x509->cert_info->key->public_key->data != NULL)
-				&& (
-					(*(s->cert->pkeys[SSL_PKEY_ECC].x509->cert_info->key->public_key->data) == POINT_CONVERSION_COMPRESSED)
-					|| (*(s->cert->pkeys[SSL_PKEY_ECC].x509->cert_info->key->public_key->data) == POINT_CONVERSION_COMPRESSED + 1)
-					)
-				)
-		)
-			{
+		/* if we are considering an ECC cipher suite that uses our certificate */
+		CERT_PKEY *cert_pkey = NULL;
+		if (alg_a & SSL_aECDSA || alg_a & SSL_aECDH)
+		{
+			cert_pkey = &(s->cert->pkeys[SSL_PKEY_ECC]);
+		}
+		else if (alg_a & SSL_aSM2)
+		{
+			cert_pkey = &(s->cert->pkeys[SSL_PKEY_SM2]);
+		}
+
+		if ((cert_pkey != NULL)
+			&& (cert_pkey->x509 != NULL)
+			&& (cert_pkey->x509->cert_info != NULL )
+			&& (cert_pkey->x509->cert_info->key != NULL)
+			&& (cert_pkey->x509->cert_info->key->public_key != NULL)
+			&& (cert_pkey->x509->cert_info->key->public_key->data != NULL)
+			&& (s->session->tlsext_ecpointformatlist_length > 0)
+			&& (s->session->tlsext_ecpointformatlist != NULL)
+			&& ((*(cert_pkey->x509->cert_info->key->public_key->data) == POINT_CONVERSION_COMPRESSED)
+				|| (*(cert_pkey->x509->cert_info->key->public_key->data) == POINT_CONVERSION_COMPRESSED + 1))
+			)
+		{
 			ec_ok = 0;
 			/* if our certificate's curve is over a field type that the client does not support
 			 * then do not allow this cipher suite to be negotiated */
-			if (
-				(s->cert->pkeys[SSL_PKEY_ECC].privatekey->pkey.ec != NULL)
-				&& (s->cert->pkeys[SSL_PKEY_ECC].privatekey->pkey.ec->group != NULL)
-				&& (s->cert->pkeys[SSL_PKEY_ECC].privatekey->pkey.ec->group->meth != NULL)
-				&& (EC_METHOD_get_field_type(s->cert->pkeys[SSL_PKEY_ECC].privatekey->pkey.ec->group->meth) == NID_X9_62_prime_field)
-			)
+			if ((cert_pkey->privatekey->pkey.ec != NULL)
+				 && (cert_pkey->privatekey->pkey.ec->group != NULL)
+				 && (cert_pkey->privatekey->pkey.ec->group->meth != NULL)
+				 && (EC_METHOD_get_field_type(cert_pkey->privatekey->pkey.ec->group->meth) == NID_X9_62_prime_field))
 				{
-				for (j = 0; j < s->session->tlsext_ecpointformatlist_length; j++)
+					for (j = 0; j < s->session->tlsext_ecpointformatlist_length; j++)
 					{
-					if (s->session->tlsext_ecpointformatlist[j] == TLSEXT_ECPOINTFORMAT_ansiX962_compressed_prime)
+						if (s->session->tlsext_ecpointformatlist[j] == TLSEXT_ECPOINTFORMAT_ansiX962_compressed_prime)
 						{
-						ec_ok = 1;
-						break;
+							ec_ok = 1;
+							break;
 						}
 					}
 				}
-			else if (EC_METHOD_get_field_type(s->cert->pkeys[SSL_PKEY_ECC].privatekey->pkey.ec->group->meth) == NID_X9_62_characteristic_two_field)
+				else if (EC_METHOD_get_field_type(cert_pkey->privatekey->pkey.ec->group->meth) == NID_X9_62_characteristic_two_field)
 				{
-				for (j = 0; j < s->session->tlsext_ecpointformatlist_length; j++)
+					for (j = 0; j < s->session->tlsext_ecpointformatlist_length; j++)
 					{
-					if (s->session->tlsext_ecpointformatlist[j] == TLSEXT_ECPOINTFORMAT_ansiX962_compressed_char2)
+						if (s->session->tlsext_ecpointformatlist[j] == TLSEXT_ECPOINTFORMAT_ansiX962_compressed_char2)
 						{
-						ec_ok = 1;
-						break;
+							ec_ok = 1;
+							break;
 						}
 					}
 				}
 			ok = ok && ec_ok;
-			}
+		}
+
+
 		if (
 			/* if we are considering an ECC cipher suite that uses our certificate */
-			(alg_a & SSL_aECDSA || alg_a & SSL_aECDH)
+			(cert_pkey != NULL)
 			/* and we have an ECC certificate */
-			&& (s->cert->pkeys[SSL_PKEY_ECC].x509 != NULL)
+			&& (cert_pkey->x509 != NULL)
 			/* and the client specified an EllipticCurves extension */
 			&& ((s->session->tlsext_ellipticcurvelist_length > 0) && (s->session->tlsext_ellipticcurvelist != NULL))
 		)
-			{
+		{
 			ec_ok = 0;
-			if (
-				(s->cert->pkeys[SSL_PKEY_ECC].privatekey->pkey.ec != NULL)
-				&& (s->cert->pkeys[SSL_PKEY_ECC].privatekey->pkey.ec->group != NULL)
-			)
+			if ((cert_pkey->privatekey->pkey.ec != NULL) && (cert_pkey->privatekey->pkey.ec->group != NULL))
+			{
+				ec_nid = EC_GROUP_get_curve_name(cert_pkey->privatekey->pkey.ec->group);
+				if ((ec_nid == 0) && (cert_pkey->privatekey->pkey.ec->group->meth != NULL))
 				{
-				ec_nid = EC_GROUP_get_curve_name(s->cert->pkeys[SSL_PKEY_ECC].privatekey->pkey.ec->group);
-				if ((ec_nid == 0)
-					&& (s->cert->pkeys[SSL_PKEY_ECC].privatekey->pkey.ec->group->meth != NULL)
-				)
-					{
-					if (EC_METHOD_get_field_type(s->cert->pkeys[SSL_PKEY_ECC].privatekey->pkey.ec->group->meth) == NID_X9_62_prime_field)
+					if (EC_METHOD_get_field_type(cert_pkey->privatekey->pkey.ec->group->meth) == NID_X9_62_prime_field)
 						{
 						ec_search1 = 0xFF;
 						ec_search2 = 0x01;
 						}
-					else if (EC_METHOD_get_field_type(s->cert->pkeys[SSL_PKEY_ECC].privatekey->pkey.ec->group->meth) == NID_X9_62_characteristic_two_field)
+					else if (EC_METHOD_get_field_type(cert_pkey->privatekey->pkey.ec->group->meth) == NID_X9_62_characteristic_two_field)
 						{
 						ec_search1 = 0xFF;
 						ec_search2 = 0x02;
 						}
-					}
+				}
 				else
-					{
+				{
 					ec_search1 = 0x00;
 					ec_search2 = tls1_ec_nid2curve_id(ec_nid);
-					}
+				}
 				if ((ec_search1 != 0) || (ec_search2 != 0))
-					{
+				{
 					for (j = 0; j < s->session->tlsext_ellipticcurvelist_length / 2; j++)
-						{
+					{
 						if ((s->session->tlsext_ellipticcurvelist[2*j] == ec_search1) && (s->session->tlsext_ellipticcurvelist[2*j+1] == ec_search2))
-							{
+						{
 							ec_ok = 1;
 							break;
-							}
 						}
 					}
 				}
-			ok = ok && ec_ok;
 			}
+			ok = ok && ec_ok;
+		}
+
+		cert_pkey = NULL;
+
 		if (
 			/* if we are considering an ECC cipher suite that uses an ephemeral EC key */
-			(alg_k & SSL_kEECDH)
+			(alg_k & SSL_kEECDH || alg_k & SSL_kSM2DH)
 			/* and we have an ephemeral EC key */
 			&& (s->cert->ecdh_tmp != NULL)
 			/* and the client specified an EllipticCurves extension */
@@ -4022,7 +4046,9 @@ SSL_CIPHER *ssl3_choose_cipher(SSL *s, STACK_OF(SSL_CIPHER) *clnt,
 		if (ii >= 0)
 			{
 #if !defined(OPENSSL_NO_EC) && !defined(OPENSSL_NO_TLSEXT)
-			if ((alg_k & SSL_kEECDH) && (alg_a & SSL_aECDSA) && s->s3->is_probably_safari)
+			if ((alg_k & SSL_kEECDH || alg_k & SSL_kSM2DH) 
+				 && (alg_a & SSL_aECDSA || alg_a & SSL_aSM2) 
+				 && s->s3->is_probably_safari)
 				{
 				if (!ret) ret=sk_SSL_CIPHER_value(allow,ii);
 				continue;
@@ -4081,7 +4107,7 @@ int ssl3_get_req_cert_type(SSL *s, unsigned char *p)
 #ifndef OPENSSL_NO_DSA
 	p[ret++]=SSL3_CT_DSS_SIGN;
 #endif
-#ifndef OPENSSL_NO_ECDH
+#ifndef OPENSSL_NO_ECDH 
 	if ((alg_k & (SSL_kECDHr|SSL_kECDHe)) && (s->version >= TLS1_VERSION))
 		{
 		p[ret++]=TLS_CT_RSA_FIXED_ECDH;

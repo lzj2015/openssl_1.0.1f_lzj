@@ -123,6 +123,7 @@
 #include <openssl/objects.h>
 #include <openssl/evp.h>
 #include <openssl/x509.h>
+#include <openssl/x509v3.h>
 
 /* send s->init_buf in records of type 'type' (SSL3_RT_HANDSHAKE or SSL3_RT_CHANGE_CIPHER_SPEC) */
 int ssl3_do_write(SSL *s, int type)
@@ -589,6 +590,13 @@ int ssl_cert_type(X509 *x, EVP_PKEY *pkey)
 #ifndef OPENSSL_NO_EC
 	else if (i == EVP_PKEY_EC)
 		{
+#ifndef OPENSSL_NO_SM2
+		if (EC_GROUP_get_curve_name(EC_KEY_get0_group(pk->pkey.ec)) == NID_sm2)
+			{
+			ret = SSL_PKEY_SM2;
+			}	
+		else 
+#endif
 		ret = SSL_PKEY_ECC;
 		}	
 #endif

@@ -470,7 +470,7 @@ int sm2_sign(const unsigned char *dgst, int dgstlen,
     BIGNUM *e = NULL;
     ECDSA_SIG *s = NULL;
     int sigleni;
-    int ret = -1;
+    int ret = 0;
 
     e = BN_bin2bn(dgst, dgstlen, NULL);
     if (e == NULL) {
@@ -503,7 +503,7 @@ int sm2_verify(const unsigned char *dgst, int dgstlen,
     const unsigned char *p = sig;
     unsigned char *der = NULL;
     int derlen = -1;
-    int ret = -1;
+    int ret = 0;
 
     s = ECDSA_SIG_new();
     if (s == NULL) {

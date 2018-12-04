@@ -4037,103 +4037,103 @@
 
 #define SN_sm4		"SM4"
 #define LN_sm4		"sm4"
-#define NID_sm4		931
+#define NID_sm4		921
 #define OBJ_sm4		OBJ_sm_scheme,104L
 
 #define SN_sm4_cbc		"SM4-CBC"
 #define LN_sm4_cbc		"sm4-cbc"
-#define NID_sm4_cbc		932
+#define NID_sm4_cbc		922
 
 #define SN_sm4_ecb		"SM4-ECB"
 #define LN_sm4_ecb		"sm4-ecb"
-#define NID_sm4_ecb		933
+#define NID_sm4_ecb		923
 
 #define SN_sm4_cfb		"SM4-CFB"
 #define LN_sm4_cfb		"sm4-cfb"
-#define NID_sm4_cfb		934
+#define NID_sm4_cfb		924
 
 #define SN_sm4_ofb		"SM4-OFB"
 #define LN_sm4_ofb		"sm4-ofb"
-#define NID_sm4_ofb		935
+#define NID_sm4_ofb		925
 
 #define SN_sm4_ctr		"SM4-CTR"
 #define LN_sm4_ctr		"sm4-ctr"
-#define NID_sm4_ctr		953
+#define NID_sm4_ctr		926
 
 #define SN_zuc		"ZUC"
 #define LN_zuc		"zuc"
-#define NID_zuc		936
+#define NID_zuc		927
 #define OBJ_zuc		OBJ_sm_scheme,201L
 
 #define SN_zuc_cipher		"ZUC-CIPHER"
 #define LN_zuc_cipher		"zuc-cipher"
-#define NID_zuc_cipher		937
+#define NID_zuc_cipher		928
 
 #define SN_zuc_mac		"ZUC-MAC"
 #define LN_zuc_mac		"zuc_mac"
-#define NID_zuc_mac		938
+#define NID_zuc_mac		929
 
 #define SN_sm2		"SM2"
 #define LN_sm2		"sm2"
-#define NID_sm2		939
+#define NID_sm2		930
 #define OBJ_sm2		OBJ_sm_scheme,301L
 
 #define SN_sm2signature		"sm2signature"
-#define NID_sm2signature		940
+#define NID_sm2signature		931
 #define OBJ_sm2signature		OBJ_sm2,1L
 
 #define SN_sm2keyagreement		"sm2keyagreement"
-#define NID_sm2keyagreement		941
+#define NID_sm2keyagreement		932
 #define OBJ_sm2keyagreement		OBJ_sm2,2L
 
 #define SN_sm2encrypt		"sm2encrypt"
-#define NID_sm2encrypt		942
+#define NID_sm2encrypt		933
 #define OBJ_sm2encrypt		OBJ_sm2,3L
 
 #define SN_sm9		"SM9"
 #define LN_sm9		"sm9"
-#define NID_sm9		943
+#define NID_sm9		934
 #define OBJ_sm9		OBJ_sm_scheme,302L
 
 #define SN_sm9signature		"sm9signature"
-#define NID_sm9signature		944
+#define NID_sm9signature		935
 #define OBJ_sm9signature		OBJ_sm9,1L
 
 #define SN_sm9keyagreement		"sm9keyagreement"
-#define NID_sm9keyagreement		945
+#define NID_sm9keyagreement		936
 #define OBJ_sm9keyagreement		OBJ_sm9,2L
 
 #define SN_sm9encrypt		"sm9encrypt"
-#define NID_sm9encrypt		946
+#define NID_sm9encrypt		937
 #define OBJ_sm9encrypt		OBJ_sm9,3L
 
 #define SN_sm3		"SM3"
 #define LN_sm3		"sm3"
-#define NID_sm3		947
+#define NID_sm3		938
 #define OBJ_sm3		OBJ_sm_scheme,401L
 
 #define SN_sm3_digest		"SM3-DIGEST"
 #define LN_sm3_digest		"sm3-digest"
-#define NID_sm3_digest		948
+#define NID_sm3_digest		939
 #define OBJ_sm3_digest		OBJ_sm3,1L
 
 #define SN_hmac_sm3		"HMAC-SM3"
 #define LN_hmac_sm3		"hmac-sm3"
-#define NID_hmac_sm3		949
+#define NID_hmac_sm3		940
 #define OBJ_hmac_sm3		OBJ_sm3,2L
 
 #define SN_sm3WithSM2Sign		"SM2-SM3"
 #define LN_sm3WithSM2Sign		"sm3WithSM2Sign"
-#define NID_sm3WithSM2Sign		950
+#define NID_sm3WithSM2Sign		941
 #define OBJ_sm3WithSM2Sign		OBJ_sm_scheme,501L
 
 #define SN_sm3WithRSAEncryption		"RSA-SM3"
 #define LN_sm3WithRSAEncryption		"sm3WithRSAEncryption"
-#define NID_sm3WithRSAEncryption		951
+#define NID_sm3WithRSAEncryption		942
 #define OBJ_sm3WithRSAEncryption		OBJ_sm_scheme,504L
 
 #define SN_sm3WithRSA		"RSA-SM3-2"
 #define LN_sm3WithRSA		"sm3WithRSA"
-#define NID_sm3WithRSA		952
+#define NID_sm3WithRSA		943
 #define OBJ_sm3WithRSA		OBJ_sm_scheme,504L
 

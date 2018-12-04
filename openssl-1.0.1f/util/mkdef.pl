@@ -82,10 +82,10 @@ my @known_platforms = ( "__FreeBSD__", "PERL5", "NeXT",
 			"EXPORT_VAR_AS_FUNCTION", "ZLIB", "OPENSSL_FIPS" );
 my @known_ossl_platforms = ( "VMS", "WIN16", "WIN32", "WINNT", "OS2" );
 my @known_algorithms = ( "RC2", "RC4", "RC5", "IDEA", "DES", "BF",
-			 "CAST", "MD2", "MD4", "MD5", "SHA", "SHA0", "SHA1",
+			 "CAST", "MD2", "MD4", "MD5", "SM3," "SHA", "SHA0", "SHA1",
 			 "SHA256", "SHA512", "RIPEMD",
-			 "MDC2", "WHIRLPOOL", "RSA", "DSA", "DH", "EC", "ECDH", "ECDSA", "EC2M",
-			 "HMAC", "AES", "CAMELLIA", "SEED", "GOST",
+			 "MDC2", "WHIRLPOOL", "RSA", "DSA", "DH", "EC", "ECDH", "ECDSA", "SM2", "EC2M",
+			 "HMAC", "AES", "SM4", "CAMELLIA", "SEED", "GOST",
 			 # EC_NISTP_64_GCC_128
 			 "EC_NISTP_64_GCC_128",
 			 # Envelope "algorithms"
@@ -116,9 +116,7 @@ my @known_algorithms = ( "RC2", "RC4", "RC5", "IDEA", "DES", "BF",
 			 # Hide SSL internals
 			 "SSL_INTERN",
 			 # SCTP
-			 "SCTP",
-			 #China SM
-			 "SM3","SM4","SM2");
+			 "SCTP");
 
 my $options="";
 open(IN,"<Makefile") || die "unable to open Makefile!\n";
@@ -139,15 +137,14 @@ my $no_fp_api; my $no_static_engine=1; my $no_gmp; my $no_deprecated;
 my $no_rfc3779; my $no_psk; my $no_tlsext; my $no_cms; my $no_capieng;
 my $no_jpake; my $no_srp; my $no_ssl2; my $no_ec2m; my $no_nistp_gcc; 
 my $no_nextprotoneg; my $no_sctp;
-
-my $fips;
-
-my $zlib;
-
 #Chian SM
 my $no_sm3;
 my $no_sm4;
 my $no_sm2;
+
+my $fips;
+
+my $zlib;
 
 
 foreach (@ARGV, split(/ /, $options))
@@ -242,7 +239,7 @@ foreach (@ARGV, split(/ /, $options))
 	elsif (/^no-jpake$/)	{ $no_jpake=1; }
 	elsif (/^no-srp$/)	{ $no_srp=1; }
 	elsif (/^no-sctp$/)	{ $no_sctp=1; }
-	#China SM
+		#China SM
 	elsif (/^no-sm3$/) { $no_sm3=1; }
 	elsif (/^no-sm4$/) { $no_sm4=1; }
 	elsif (/^no-sm2$/) { $no_sm2=1; }
@@ -300,10 +297,12 @@ $crypto.=" crypto/whrlpool/whrlpool.h" ;
 $crypto.=" crypto/md2/md2.h" ; # unless $no_md2;
 $crypto.=" crypto/md4/md4.h" ; # unless $no_md4;
 $crypto.=" crypto/md5/md5.h" ; # unless $no_md5;
+$crypto.=" crypto/sm3/sm3.h" ; # unless $no_sm3
 $crypto.=" crypto/mdc2/mdc2.h" ; # unless $no_mdc2;
 $crypto.=" crypto/sha/sha.h" ; # unless $no_sha;
 $crypto.=" crypto/ripemd/ripemd.h" ; # unless $no_ripemd;
 $crypto.=" crypto/aes/aes.h" ; # unless $no_aes;
+$crypto.=" crypto/sm4/sm4.h" ; # unless $no_sm4
 $crypto.=" crypto/camellia/camellia.h" ; # unless $no_camellia;
 $crypto.=" crypto/seed/seed.h"; # unless $no_seed;
 
@@ -314,6 +313,7 @@ $crypto.=" crypto/dh/dh.h" ; # unless $no_dh;
 $crypto.=" crypto/ec/ec.h" ; # unless $no_ec;
 $crypto.=" crypto/ecdsa/ecdsa.h" ; # unless $no_ecdsa;
 $crypto.=" crypto/ecdh/ecdh.h" ; # unless $no_ecdh;
+$crypto.=" crypto/sm2/sm2.h" ; # unless $no_sm2
 $crypto.=" crypto/hmac/hmac.h" ; # unless $no_hmac;
 $crypto.=" crypto/cmac/cmac.h" ; # unless $no_hmac;
 
@@ -351,10 +351,6 @@ $crypto.=" crypto/cms/cms.h";
 $crypto.=" crypto/jpake/jpake.h";
 $crypto.=" crypto/modes/modes.h";
 $crypto.=" crypto/srp/srp.h";
-#China SM
-$crypto.=" crypto/sm3/sm3.h"; # unless $no_sm3
-$crypto.=" crypto/sm4/sm4.h"; # unless $no_sm4
-$crypto.=" crypto/sm2/sm2.h"; # unless $no_sm2
 
 my $symhacks="crypto/symhacks.h";
 
@@ -1228,6 +1224,7 @@ sub is_valid
 			if ($keyword eq "SM3" && $no_sm3) { return 0; }
 			if ($keyword eq "SM4" && $no_sm4) { return 0; }
 			if ($keyword eq "SM2" && $no_sm2) { return 0; }
+
 			# Nothing recognise as true
 			return 1;
 		}

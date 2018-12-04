@@ -140,7 +140,7 @@ $! reflect the EXE variable in Makefile as closely as possible,
 $! thereby making it fairly easy to verify that the lists are the same.
 $!
 $ TEST_FILES = "BNTEST,ECTEST,ECDSATEST,ECDHTEST,IDEATEST,"+ -
-	       "MD2TEST,MD4TEST,MD5TEST,SM3TEST,SM4TEST,SM2TEST,HMACTEST,WP_TEST,"+ -
+	       "MD2TEST,MD4TEST,MD5TEST,SM3TEST,SM4TEST,SM2TEST,SM2DHTEST,HMACTEST,WP_TEST,"+ -
 	       "RC2TEST,RC4TEST,RC5TEST,"+ -
 	       "DESTEST,SHATEST,SHA1TEST,SHA256T,SHA512T,"+ -
 	       "MDC2TEST,RMDTEST,"+ -
@@ -162,6 +162,7 @@ $ T_D_MD5TEST    := [-.crypto.md5]
 $ T_D_SM3TEST    := [-.crypto.sm3]
 $ T_D_SM4TEST    := [-.crypto.sm4]
 $ T_D_SM2TEST    := [-.crypto.sm2]
+$ T_D_SM2DHTEST    := [-.crypto.sm2dh]
 $ T_D_HMACTEST   := [-.crypto.hmac]
 $ T_D_WP_TEST    := [-.crypto.whrlpool]
 $ T_D_RC2TEST    := [-.crypto.rc2]

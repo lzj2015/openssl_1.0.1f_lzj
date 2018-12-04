@@ -7,13 +7,13 @@
  * in the file LICENSE in the source distribution or at
  * https://www.openssl.org/source/license.html
  */
-
+#ifndef OPENSSL_NO_ERR
 #include <openssl/err.h>
 #include <openssl/sm2.h>
 
-#ifndef OPENSSL_NO_ERR
 
-static const ERR_STRING_DATA SM2_str_functs[] = {
+
+static ERR_STRING_DATA SM2_str_functs[] = {
     {ERR_PACK(ERR_LIB_SM2, SM2_F_PKEY_SM2_COPY, 0), "pkey_sm2_copy"},
     {ERR_PACK(ERR_LIB_SM2, SM2_F_PKEY_SM2_CTRL, 0), "pkey_sm2_ctrl"},
     {ERR_PACK(ERR_LIB_SM2, SM2_F_PKEY_SM2_CTRL_STR, 0), "pkey_sm2_ctrl_str"},
@@ -34,10 +34,11 @@ static const ERR_STRING_DATA SM2_str_functs[] = {
     {ERR_PACK(ERR_LIB_SM2, SM2_F_SM2_SIG_GEN, 0), "sm2_sig_gen"},
     {ERR_PACK(ERR_LIB_SM2, SM2_F_SM2_SIG_VERIFY, 0), "sm2_sig_verify"},
     {ERR_PACK(ERR_LIB_SM2, SM2_F_SM2_VERIFY, 0), "sm2_verify"},
+    {ERR_PACK(ERR_LIB_SM2, SM2_F_SM2_DH, 0), "sm2_dh"},
     {0, NULL}
 };
 
-static const ERR_STRING_DATA SM2_str_reasons[] = {
+static ERR_STRING_DATA SM2_str_reasons[] = {
     {ERR_PACK(ERR_LIB_SM2, 0, SM2_R_ASN1_ERROR), "asn1 error"},
     {ERR_PACK(ERR_LIB_SM2, 0, SM2_R_BAD_SIGNATURE), "bad signature"},
     {ERR_PACK(ERR_LIB_SM2, 0, SM2_R_BUFFER_TOO_SMALL), "buffer too small"},
@@ -52,6 +53,8 @@ static const ERR_STRING_DATA SM2_str_reasons[] = {
     {ERR_PACK(ERR_LIB_SM2, 0, SM2_R_INVALID_FIELD), "invalid field"},
     {ERR_PACK(ERR_LIB_SM2, 0, SM2_R_NO_PARAMETERS_SET), "no parameters set"},
     {ERR_PACK(ERR_LIB_SM2, 0, SM2_R_USER_ID_TOO_LARGE), "user id too large"},
+    {ERR_PACK(ERR_LIB_SM2, 0, SM2_R_INVALID_INPUT), "invalid input"},
+    {ERR_PACK(ERR_LIB_SM2, 0, SM2_R_GEN_KEY), "generated key errpr"},
     {0, NULL}
 };
 
