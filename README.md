@@ -48,9 +48,9 @@ Download ([openssl_1.0.1f_lzj -master.zip](https://github.com/lzj2015/openssl_1.
  ```
  
 ## Some example
-You can see some deome in the sm2ssltest folder for using GM/T 0024-2014 TLS VPN protocol.
+You can see some dome in the sm2ssltest folder for using GM/T 0024-2014 TLS VPN protocol.
 And you will get some example in test folder for using sm3, sm4, sm2 signature sm2 decryption or sm2 encryption as well.
 
 
 
-email: liuzhj28@gmail.com
+mail: liuzhj28@gmail.com
