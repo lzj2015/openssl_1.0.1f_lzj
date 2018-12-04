@@ -37,9 +37,9 @@ SM2DH_WITH_SMS4_SM3
 
 ## Quick Start
 
-The buiding of the project is the same sa the ([openssl-1.0.1f](https://www.openssl.org/source/old/1.0.1/)).
+The building of the project is the same sa the ([openssl-1.0.1f](https://www.openssl.org/source/old/1.0.1/)).
 
-Download ([openssl_1.0.1f_lzj -master.zip](https://github.com/lzj2015/openssl_1.0.1f_lzj.git)), uncompress it and go to the source code folder. On Windows, Linux or MacOS, run the following commands:
+Download ([openssl_1.0.1f_lzj-master.zip](https://github.com/lzj2015/openssl_1.0.1f_lzj.git)), uncompress it and go to the source code folder. On Windows, Linux or MacOS, run the following commands:
 
  ```sh
  $ ./config
@@ -49,7 +49,8 @@ Download ([openssl_1.0.1f_lzj -master.zip](https://github.com/lzj2015/openssl_1.
  
 ## Some example
 You can see some dome in the sm2ssltest folder for using GM/T 0024-2014 TLS VPN protocol.
-And you will get some example in test folder for using sm3, sm4, sm2 signature sm2 decryption or sm2 encryption as well.
+
+You will get some example in test folder for using sm3, sm4, sm2 signature sm2 decryption or sm2 encryption as well.
 
 
 
