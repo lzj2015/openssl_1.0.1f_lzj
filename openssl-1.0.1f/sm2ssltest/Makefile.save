@@ -18,10 +18,7 @@ EX_LIBS= #-lnsl -lsocket
 
 CFLAGS= $(INCLUDES) $(CFLAG)
 
-GENERAL=Makefile maketests.com \
-	tests.com testenc.com tx509.com trsa.com tcrl.com tsid.com treq.com \
-	tpkcs7.com tpkcs7d.com tverify.com testgen.com testss.com testssl.com \
-	testca.com VMSca-response.1 VMSca-response.2
+GENERAL=Makefile maketests.com 
 
 DLIBCRYPTO= ../libcrypto.a
 DLIBSSL= ../libssl.a
@@ -29,19 +26,18 @@ LIBCRYPTO= -L.. -lcrypto
 LIBSSL= -L.. -lssl
 
 
-SM3TEST=	sm2ssltest
+SM2SSLTEST=	sm2ssltest
 
 
 TESTS=		alltests
 
-EXE=	$(SM3TEST)$(EXE_EXT) \
+EXE=	$(SM2SSLTEST)$(EXE_EXT)  
 	
 
 # $(METHTEST)$(EXE_EXT)
 
-OBJ=	$(SM3TEST).o 
-SRC=	$(SM3TEST).c
-	
+OBJ=	$(SM2SSLTEST).o 
+SRC=	$(SM2SSLTEST).c 
 
 EXHEADER= 
 HEADER=	$(EXHEADER)
@@ -72,13 +68,11 @@ tests:	exe apps $(TESTS)
 apps:
 	@(cd ..; $(MAKE) DIRS=apps all)
 
-alltests: \
-	 test_sm3 
+alltests:  test_sm2ssltest  
 
 
-test_sm3:
-	../util/shlib_wrap.sh ./$(SM3TEST)
-
+test_sm2ssltest:
+	../util/shlib_wrap.sh ./$(SM2SSLTEST)
 
 
 lint:
@@ -98,7 +92,7 @@ dclean:
 			testreq.pem
 
 clean:
-	rm -f .rnd tmp.bntest tmp.bctest *.o *.obj *.dll lib tags core .pure .nfs* *.old *.bak fluff $(EXE) *.ss *.srl log 
+	rm -f .rnd tmp.bntest tmp.bctest *.o *.obj *.dll lib tags core .pure .nfs* *.old *.bak fluff $(EXE) *.ss *.exe log 
 
 
 $(DLIBSSL):
@@ -130,11 +124,34 @@ FIPS_BUILD_CMD=shlib_target=; if [ -n "$(SHARED_LIBS)" ]; then \
 
 
 
-$(SM3TEST)$(EXE_EXT): $(SM3TEST).o $(DLIBCRYPTO)
-	@target=$(SM3TEST); $(BUILD_CMD)
+$(SM2SSLTEST)$(EXE_EXT): $(SM2SSLTEST).o $(DLIBCRYPTO)
+	@target=$(SM2SSLTEST); $(BUILD_CMD)
+
+
 
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-
-sm3test.o: sm2ssltest.c
-
+sm2ssltest.o: ../e_os.h ../include/openssl/asn1.h ../include/openssl/bio.h
+sm2ssltest.o: ../include/openssl/bn.h ../include/openssl/buffer.h
+sm2ssltest.o: ../include/openssl/comp.h ../include/openssl/conf.h
+sm2ssltest.o: ../include/openssl/crypto.h ../include/openssl/dh.h
+sm2ssltest.o: ../include/openssl/dsa.h ../include/openssl/dtls1.h
+sm2ssltest.o: ../include/openssl/e_os2.h ../include/openssl/ec.h
+sm2ssltest.o: ../include/openssl/ecdh.h ../include/openssl/ecdsa.h
+sm2ssltest.o: ../include/openssl/engine.h ../include/openssl/err.h
+sm2ssltest.o: ../include/openssl/evp.h ../include/openssl/hmac.h
+sm2ssltest.o: ../include/openssl/kssl.h ../include/openssl/lhash.h
+sm2ssltest.o: ../include/openssl/obj_mac.h ../include/openssl/objects.h
+sm2ssltest.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
+sm2ssltest.o: ../include/openssl/ossl_typ.h ../include/openssl/pem.h
+sm2ssltest.o: ../include/openssl/pem2.h ../include/openssl/pkcs7.h
+sm2ssltest.o: ../include/openssl/pqueue.h ../include/openssl/rand.h
+sm2ssltest.o: ../include/openssl/rsa.h ../include/openssl/safestack.h
+sm2ssltest.o: ../include/openssl/sha.h ../include/openssl/srp.h
+sm2ssltest.o: ../include/openssl/srtp.h ../include/openssl/ssl.h
+sm2ssltest.o: ../include/openssl/ssl2.h ../include/openssl/ssl23.h
+sm2ssltest.o: ../include/openssl/ssl3.h ../include/openssl/stack.h
+sm2ssltest.o: ../include/openssl/symhacks.h ../include/openssl/tls1.h
+sm2ssltest.o: ../include/openssl/x509.h ../include/openssl/x509_vfy.h
+sm2ssltest.o: ../include/openssl/x509v3.h ../include/openssl/sm2.h
+sm2ssltest.o: sm2ssltest.c

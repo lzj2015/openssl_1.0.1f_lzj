@@ -1751,7 +1751,8 @@ fprintf(stderr, "USING TLSv1.2 HASH %s\n", EVP_MD_name(md));
 			n -= 2;
 			}
 #if !defined(OPENSSL_NO_SM2)|| !defined(OPENSSL_NO_SM3)
-		else if (EC_GROUP_get_curve_name(EC_KEY_get0_group(EVP_PKEY_get0(pkey))) == NID_sm2)
+		else if ((alg_a & SSL_aSM2) && (pkey != NULL)
+				&& (EC_GROUP_get_curve_name(EC_KEY_get0_group(EVP_PKEY_get0(pkey))) == NID_sm2))
 			md = EVP_sm3();
 #endif
 		else
@@ -3145,7 +3146,7 @@ int ssl3_send_client_verify(SSL *s)
 		EVP_PKEY_sign_init(pctx);
 		const EVP_MD *handshake_buffer_md;
 #ifndef OPENSSL_NO_SM2
-		if (pkey->type == EVP_PKEY_EC 
+		if ( pkey != NULL && pkey->type == EVP_PKEY_EC 
 			&& EC_GROUP_get_curve_name(EC_KEY_get0_group(pkey->pkey.ec)) == NID_sm2)
 			handshake_buffer_md = EVP_sm3();
 		else
@@ -3242,7 +3243,7 @@ int ssl3_send_client_verify(SSL *s)
 		else
 #endif
 #ifndef OPENSSL_NO_SM2	
-		if (pkey->type == EVP_PKEY_EC && EC_GROUP_get_curve_name(EC_KEY_get0_group(EVP_PKEY_get0(pkey))) == NID_sm2)
+		if ( pkey != NULL && pkey->type == EVP_PKEY_EC && EC_GROUP_get_curve_name(EC_KEY_get0_group(EVP_PKEY_get0(pkey))) == NID_sm2)
 		{
 			if(!sm2_sign(data, SM3_DIGEST_LENGTH, &(p[2]),
 					(unsigned int *)&j, pkey->pkey.ec))

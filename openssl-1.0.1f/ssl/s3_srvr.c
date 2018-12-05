@@ -3273,7 +3273,7 @@ fprintf(stderr, "USING TLSv1.2 HASH %s\n", EVP_MD_name(md));
 	else
 #endif
 #ifndef OPENSSL_NO_SM2	
-		if (pkey->type == EVP_PKEY_EC && EC_GROUP_get_curve_name(EC_KEY_get0_group(EVP_PKEY_get0(pkey))) == NID_sm2)
+		if (pkey != NULL && pkey->type == EVP_PKEY_EC && EC_GROUP_get_curve_name(EC_KEY_get0_group(EVP_PKEY_get0(pkey))) == NID_sm2)
 		{
 		j=sm2_verify((unsigned char *)(&(s->s3->tmp.cert_verify_md)),
 			SM3_DIGEST_LENGTH, p, i, pkey->pkey.ec);
