@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <openssl/sm4.h>
-#include <unistd.h>
+
 
 
 const char *test1result = "\x68\x1E\xDF\x34\xD2\x06\x96\x5E\x86\xB3\xE9\x4F\x53\x6E\x42\x46";
@@ -25,7 +25,6 @@ int main(int argc, char **argv)
 	
 	SM4_set_key((const unsigned char *)user_key, 16, &key);
 	
-	/*输出轮密钥*/
 	for (loop = 0; loop < 32; loop++)
 	{
 		printf("\trk[%02d]=0x%08X", loop, key.key[loop]);

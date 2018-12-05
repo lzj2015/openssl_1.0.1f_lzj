@@ -82,7 +82,7 @@ my @known_platforms = ( "__FreeBSD__", "PERL5", "NeXT",
 			"EXPORT_VAR_AS_FUNCTION", "ZLIB", "OPENSSL_FIPS" );
 my @known_ossl_platforms = ( "VMS", "WIN16", "WIN32", "WINNT", "OS2" );
 my @known_algorithms = ( "RC2", "RC4", "RC5", "IDEA", "DES", "BF",
-			 "CAST", "MD2", "MD4", "MD5", "SM3," "SHA", "SHA0", "SHA1",
+			 "CAST", "MD2", "MD4", "MD5", "SM3", "SHA", "SHA0", "SHA1",
 			 "SHA256", "SHA512", "RIPEMD",
 			 "MDC2", "WHIRLPOOL", "RSA", "DSA", "DH", "EC", "ECDH", "ECDSA", "SM2", "EC2M",
 			 "HMAC", "AES", "SM4", "CAMELLIA", "SEED", "GOST",

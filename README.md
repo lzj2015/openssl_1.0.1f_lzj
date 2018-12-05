@@ -46,6 +46,26 @@ Download ([openssl_1.0.1f_lzj-master.zip](https://github.com/lzj2015/openssl_1.0
  $ make
  $ sudo make install
  ```
+
+## Windows VC Compile
+
+1. Install VS Studio;
+
+2. Install ([Nasm](http://www.nasm.us/ ));
+
+3. Install ([Perl](http://www.openssl.org/));
+
+4. Download ([openssl_1.0.1f_lzj-master.zip](https://github.com/lzj2015/openssl_1.0.1f_lzj.git)), uncompress it and go to the source code folder.
+
+5. Open cmd
+
+```
+cd openssl_1.0.1f_lzj-master
+perl Configure VC-WIN32 --prefix=c:\some\openssl\dir (*win32*)  or   perl Configure VC-WIN64A (*win64*)
+ms\do_nasm
+nmake -f ms\ntdll.mak
+nmake -f ms\ntdll.mak install
+```
  
 ## Some example
 Using GM/T 0024-2014 TLS VPN protocol.

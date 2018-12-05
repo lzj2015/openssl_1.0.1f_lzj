@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <openssl/sm3.h>
-#include <unistd.h>
 
 int run;
 

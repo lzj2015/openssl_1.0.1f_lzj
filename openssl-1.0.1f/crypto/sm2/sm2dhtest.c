@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+
 
 #include "../e_os.h"
 #include <openssl/opensslconf.h>	/* for OPENSSL_NO_ECDH */
