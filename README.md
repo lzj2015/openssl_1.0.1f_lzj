@@ -49,17 +49,25 @@ Download ([openssl_1.0.1f_lzj-master.zip](https://github.com/lzj2015/openssl_1.0
  
 ## Some example
 Using GM/T 0024-2014 TLS VPN protocol.
-
+```
 $ ./ssltest -tls1 -named_curve "SM2" -client_auth -server_auth -CAfile ../sm2ssltest/CA.pem  -cert ../sm2ssltest/SS.pem -key ../sm2ssltest/SS.pem -c_cert ../sm2ssltest/CS.pem -c_key ../sm2ssltest/CS.pem
-Available compression methods:  NONE
-client authentication
-server authentication
-depth=1 /C=CN/ST=BJ/L=GUANGZHOU/O=LZJ Technology LTD./OU=SORB of openssl/CN=Test CA (SM2)
-depth=0 /C=CN/ST=BJ/L=GUANGZHOU/O=LZJ Technology LTD./OU=BSRC of openssl/CN=server sign (SM2)
-depth=1 /C=CN/ST=BJ/L=GUANGZHOU/O=LZJ Technology LTD./OU=SORB of openssl/CN=Test CA (SM2)
-depth=0 /C=CN/ST=BJ/L=GUANGZHOU/O=LZJ Technology LTD./OU=BSRC of openssl/CN=client sign (SM2)
-TLSv1, cipher TLSv1/SSLv3 SM2DH-WITH-SM4-SM31 handshakes of 256 bytes done
 
+Available compression methods:  NONE
+
+client authentication
+
+server authentication
+
+depth=1 /C=CN/ST=BJ/L=GUANGZHOU/O=LZJ Technology LTD./OU=SORB of openssl/CN=Test CA (SM2)
+
+depth=0 /C=CN/ST=BJ/L=GUANGZHOU/O=LZJ Technology LTD./OU=BSRC of openssl/CN=server sign (SM2)
+
+depth=1 /C=CN/ST=BJ/L=GUANGZHOU/O=LZJ Technology LTD./OU=SORB of openssl/CN=Test CA (SM2)
+
+depth=0 /C=CN/ST=BJ/L=GUANGZHOU/O=LZJ Technology LTD./OU=BSRC of openssl/CN=client sign (SM2)
+
+TLSv1, cipher TLSv1/SSLv3 SM2DH-WITH-SM4-SM31 handshakes of 256 bytes done
+```
 
 You will get some example in test folder for using sm3, sm4, sm2 signature sm2 decryption or sm2 encryption as well.
 
