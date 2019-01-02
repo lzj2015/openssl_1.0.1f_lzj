@@ -2,49 +2,7 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/bn.h>
-
-static int bn2binpad(const BIGNUM *a, unsigned char *to, int tolen)
-{
-    int n;
-    size_t i, lasti, j, atop, mask;
-    BN_ULONG l;
-
-    /*
-     * In case |a| is fixed-top, BN_num_bytes can return bogus length,
-     * but it's assumed that fixed-top inputs ought to be "nominated"
-     * even for padded output, so it works out...
-     */
-    n = BN_num_bytes(a);
-    if (tolen == -1) {
-        tolen = n;
-    } else if (tolen < n) {     /* uncommon/unlike case */
-        BIGNUM temp = *a;
-
-        bn_correct_top(&temp);
-        n = BN_num_bytes(&temp);
-        if (tolen < n)
-            return -1;
-    }
-
-    /* Swipe through whole available data and don't give away padded zero. */
-    atop = a->dmax * BN_BYTES;
-    if (atop == 0) {
-        OPENSSL_cleanse(to, tolen);
-        return tolen;
-    }
-
-    lasti = atop - 1;
-    atop = a->top * BN_BYTES;
-    for (i = 0, j = 0, to += tolen; j < (size_t)tolen; j++) {
-        l = a->d[i / BN_BYTES];
-        mask = 0 - ((j - atop) >> (8 * sizeof(i) - 1));
-        *--to = (unsigned char)(l >> (8 * (i % BN_BYTES)) & mask);
-        i += (i - lasti) >> (8 * sizeof(i) - 1); /* stay on last limb */
-    }
-
-    return tolen;
-}
-
+#include<string.h>
 
 static int sm2_get_point_str_xy(unsigned char*out, size_t field_size, const EC_GROUP *group, const EC_POINT *V)
 {
@@ -73,8 +31,8 @@ static int sm2_get_point_str_xy(unsigned char*out, size_t field_size, const EC_G
         goto done;
     }
 
-    if (bn2binpad(x, out, field_size) < 0
-            || bn2binpad(y, out + field_size, field_size) < 0) {
+    if (sm2_bn2binpad(x, out, field_size) < 0
+            || sm2_bn2binpad(y, out + field_size, field_size) < 0) {
         SM2err(SM2_F_SM2_DH, ERR_R_INTERNAL_ERROR);
         goto done;
     }

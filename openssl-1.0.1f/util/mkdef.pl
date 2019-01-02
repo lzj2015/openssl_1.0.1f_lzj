@@ -115,6 +115,8 @@ my @known_algorithms = ( "RC2", "RC4", "RC5", "IDEA", "DES", "BF",
 			 "DEPRECATED",
 			 # Hide SSL internals
 			 "SSL_INTERN",
+			 #TPSM2
+			 "TPSM2",
 			 # SCTP
 			 "SCTP");
 
@@ -141,6 +143,7 @@ my $no_nextprotoneg; my $no_sctp;
 my $no_sm3;
 my $no_sm4;
 my $no_sm2;
+my $no_tpsm2;
 
 my $fips;
 
@@ -243,6 +246,7 @@ foreach (@ARGV, split(/ /, $options))
 	elsif (/^no-sm3$/) { $no_sm3=1; }
 	elsif (/^no-sm4$/) { $no_sm4=1; }
 	elsif (/^no-sm2$/) { $no_sm2=1; }
+	elsif (/^no-tpsm2$/) { $no_tpsm2=1; }
 	}
 
 
@@ -314,6 +318,7 @@ $crypto.=" crypto/ec/ec.h" ; # unless $no_ec;
 $crypto.=" crypto/ecdsa/ecdsa.h" ; # unless $no_ecdsa;
 $crypto.=" crypto/ecdh/ecdh.h" ; # unless $no_ecdh;
 $crypto.=" crypto/sm2/sm2.h" ; # unless $no_sm2
+$crypto.=" crypto/tpsm2/tpsm2.h" ; # unless $no_tpsm2
 $crypto.=" crypto/hmac/hmac.h" ; # unless $no_hmac;
 $crypto.=" crypto/cmac/cmac.h" ; # unless $no_hmac;
 
@@ -1224,7 +1229,7 @@ sub is_valid
 			if ($keyword eq "SM3" && $no_sm3) { return 0; }
 			if ($keyword eq "SM4" && $no_sm4) { return 0; }
 			if ($keyword eq "SM2" && $no_sm2) { return 0; }
-
+			if ($keyword eq "TPSM2" && $no_tpsm2) { return 0; }
 			# Nothing recognise as true
 			return 1;
 		}

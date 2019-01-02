@@ -32,9 +32,11 @@ ASN1_SEQUENCE(SM2_Ciphertext) = {
     ASN1_SIMPLE(SM2_Ciphertext, C2, ASN1_OCTET_STRING),
 } ASN1_SEQUENCE_END(SM2_Ciphertext)
 
-    DECLARE_ASN1_FUNCTIONS_const(SM2_Ciphertext) DECLARE_ASN1_ENCODE_FUNCTIONS_const(SM2_Ciphertext, SM2_Ciphertext) IMPLEMENT_ASN1_FUNCTIONS_const(SM2_Ciphertext)
+DECLARE_ASN1_FUNCTIONS_const(SM2_Ciphertext) DECLARE_ASN1_ENCODE_FUNCTIONS_const(SM2_Ciphertext, SM2_Ciphertext) IMPLEMENT_ASN1_FUNCTIONS_const(SM2_Ciphertext)
 
-        static int bn2binpad(const BIGNUM *a, unsigned char *to, int tolen)
+     
+
+int sm2_bn2binpad(const BIGNUM *a, unsigned char *to, int tolen)
 {
     int n;
     size_t i, lasti, j, atop, mask;
@@ -46,12 +48,9 @@ ASN1_SEQUENCE(SM2_Ciphertext) = {
      * even for padded output, so it works out...
      */
     n = BN_num_bytes(a);
-    if (tolen == -1)
-    {
+    if (tolen == -1) {
         tolen = n;
-    }
-    else if (tolen < n)
-    { /* uncommon/unlike case */
+    } else if (tolen < n) {     /* uncommon/unlike case */
         BIGNUM temp = *a;
 
         bn_correct_top(&temp);
@@ -62,16 +61,14 @@ ASN1_SEQUENCE(SM2_Ciphertext) = {
 
     /* Swipe through whole available data and don't give away padded zero. */
     atop = a->dmax * BN_BYTES;
-    if (atop == 0)
-    {
+    if (atop == 0) {
         OPENSSL_cleanse(to, tolen);
         return tolen;
     }
 
     lasti = atop - 1;
     atop = a->top * BN_BYTES;
-    for (i = 0, j = 0, to += tolen; j < (size_t)tolen; j++)
-    {
+    for (i = 0, j = 0, to += tolen; j < (size_t)tolen; j++) {
         l = a->d[i / BN_BYTES];
         mask = 0 - ((j - atop) >> (8 * sizeof(i) - 1));
         *--to = (unsigned char)(l >> (8 * (i % BN_BYTES)) & mask);
@@ -225,7 +222,7 @@ int sm2_encrypt(const EC_KEY *key,
                 size_t msg_len, unsigned char *ciphertext_buf, size_t *ciphertext_len)
 {
 
-    int rc = 0, ciphertext_leni;
+    int rc = 0;
     size_t i;
     BN_CTX *ctx = NULL;
     BIGNUM *k = NULL;
@@ -317,7 +314,7 @@ int sm2_encrypt(const EC_KEY *key,
         goto done;
     }
 
-    if (bn2binpad(x2, x2y2, field_size) < 0 || bn2binpad(y2, x2y2 + field_size, field_size) < 0)
+    if (sm2_bn2binpad(x2, x2y2, field_size) < 0 || sm2_bn2binpad(y2, x2y2 + field_size, field_size) < 0)
     {
         SM2err(SM2_F_SM2_ENCRYPT, ERR_R_INTERNAL_ERROR);
         goto done;
@@ -353,15 +350,13 @@ int sm2_encrypt(const EC_KEY *key,
         goto done;
     }
 
-    ciphertext_leni = i2d_SM2_Ciphertext(ctext_struct, &ciphertext_buf);
+    *ciphertext_len = i2d_SM2_Ciphertext(ctext_struct, &ciphertext_buf);
     // Ensure cast to size_t is safe
-    if (ciphertext_leni < 0)
+    if (*ciphertext_len < 0)
     {
         SM2err(SM2_F_SM2_ENCRYPT, ERR_R_INTERNAL_ERROR);
         goto done;
     }
-    *ciphertext_len = (size_t)ciphertext_leni;
-
     rc = 1;
 
 done:
@@ -471,7 +466,7 @@ int sm2_decrypt(const EC_KEY *key,
         goto done;
     }
 
-    if (bn2binpad(x2, x2y2, field_size) < 0 || bn2binpad(y2, x2y2 + field_size, field_size) < 0 || !sm2_kdf(msg_mask, msg_len, x2y2, 2 * field_size, NULL, 0, digest))
+    if (sm2_bn2binpad(x2, x2y2, field_size) < 0 || sm2_bn2binpad(y2, x2y2 + field_size, field_size) < 0 || !sm2_kdf(msg_mask, msg_len, x2y2, 2 * field_size, NULL, 0, digest))
     {
         SM2err(SM2_F_SM2_DECRYPT, ERR_R_INTERNAL_ERROR);
         goto done;

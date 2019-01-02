@@ -270,6 +270,7 @@ $ CONFIG_LOGICALS := AES,-
 		     SM2,-
 		     EC_NISTP_64_GCC_128,-
 		     ENGINE,-
+			 TPSM2,-
 		     ERR,-
 		     EVP,-
 		     FP_API,-
@@ -711,7 +712,7 @@ $ SDIRS := , -
    OBJECTS, -
    MD2, MD4, MD5, SM3, SHA, MDC2, HMAC, RIPEMD, WHRLPOOL, -
    DES, AES, SM4, RC2, RC4, RC5, IDEA, BF, CAST, CAMELLIA, SEED, MODES, -
-   BN, EC, RSA, DSA, ECDSA, DH, ECDH, SM2, DSO, ENGINE, -
+   BN, EC, RSA, DSA, ECDSA, DH, ECDH, SM2, DSO, ENGINE, TPSM2, -
    BUFFER, BIO, STACK, LHASH, RAND, ERR, -
    EVP, ASN1, PEM, X509, X509V3, CONF, TXT_DB, PKCS7, PKCS12, -
    COMP, OCSP, UI, KRB5, -
@@ -749,6 +750,7 @@ $ EXHEADER_ECDSA := ecdsa.h
 $ EXHEADER_DH := dh.h
 $ EXHEADER_ECDH := ecdh.h
 $ EXHEADER_SM2 := sm2.h
+$ EXHEADER_TPSM2 := tpsm2.h
 $ EXHEADER_DSO := dso.h
 $ EXHEADER_ENGINE := engine.h
 $ EXHEADER_BUFFER := buffer.h

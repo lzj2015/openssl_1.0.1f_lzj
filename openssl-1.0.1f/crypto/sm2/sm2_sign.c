@@ -16,46 +16,10 @@
 #include <openssl/bn.h>
 #include <string.h>
 
-static int bn2binpad(const BIGNUM *a, unsigned char *to, int tolen)
+
+int sm2_computer_z_size(const EVP_MD *digest)
 {
-    int n;
-    size_t i, lasti, j, atop, mask;
-    BN_ULONG l;
-
-    /*
-     * In case |a| is fixed-top, BN_num_bytes can return bogus length,
-     * but it's assumed that fixed-top inputs ought to be "nominated"
-     * even for padded output, so it works out...
-     */
-    n = BN_num_bytes(a);
-    if (tolen == -1) {
-        tolen = n;
-    } else if (tolen < n) {     /* uncommon/unlike case */
-        BIGNUM temp = *a;
-
-        bn_correct_top(&temp);
-        n = BN_num_bytes(&temp);
-        if (tolen < n)
-            return -1;
-    }
-
-    /* Swipe through whole available data and don't give away padded zero. */
-    atop = a->dmax * BN_BYTES;
-    if (atop == 0) {
-        OPENSSL_cleanse(to, tolen);
-        return tolen;
-    }
-
-    lasti = atop - 1;
-    atop = a->top * BN_BYTES;
-    for (i = 0, j = 0, to += tolen; j < (size_t)tolen; j++) {
-        l = a->d[i / BN_BYTES];
-        mask = 0 - ((j - atop) >> (8 * sizeof(i) - 1));
-        *--to = (unsigned char)(l >> (8 * (i % BN_BYTES)) & mask);
-        i += (i - lasti) >> (8 * sizeof(i) - 1); /* stay on last limb */
-    }
-
-    return tolen;
+    return EVP_MD_size(digest);
 }
 
 int sm2_compute_z_digest(unsigned char *out,
@@ -143,23 +107,23 @@ int sm2_compute_z_digest(unsigned char *out,
         goto done;
     }
 
-    if (bn2binpad(a, buf, p_bytes) < 0
+    if (sm2_bn2binpad(a, buf, p_bytes) < 0
             || !EVP_DigestUpdate(hash, buf, p_bytes)
-            || bn2binpad(b, buf, p_bytes) < 0
+            || sm2_bn2binpad(b, buf, p_bytes) < 0
             || !EVP_DigestUpdate(hash, buf, p_bytes)
             || !EC_POINT_get_affine_coordinates_GFp(group,
                                                 EC_GROUP_get0_generator(group),
                                                 xG, yG, ctx)
-            || bn2binpad(xG, buf, p_bytes) < 0
+            || sm2_bn2binpad(xG, buf, p_bytes) < 0
             || !EVP_DigestUpdate(hash, buf, p_bytes)
-            || bn2binpad(yG, buf, p_bytes) < 0
+            || sm2_bn2binpad(yG, buf, p_bytes) < 0
             || !EVP_DigestUpdate(hash, buf, p_bytes)
             || !EC_POINT_get_affine_coordinates_GFp(group,
                                                 EC_KEY_get0_public_key(key),
                                                 xA, yA, ctx)
-            || bn2binpad(xA, buf, p_bytes) < 0
+            || sm2_bn2binpad(xA, buf, p_bytes) < 0
             || !EVP_DigestUpdate(hash, buf, p_bytes)
-            || bn2binpad(yA, buf, p_bytes) < 0
+            || sm2_bn2binpad(yA, buf, p_bytes) < 0
             || !EVP_DigestUpdate(hash, buf, p_bytes)
             || !EVP_DigestFinal(hash, out, NULL)) {
         SM2err(SM2_F_SM2_COMPUTE_Z_DIGEST, ERR_R_INTERNAL_ERROR);
@@ -485,8 +449,9 @@ int sm2_sign(const unsigned char *dgst, int dgstlen,
        SM2err(SM2_F_SM2_SIGN, ERR_R_INTERNAL_ERROR);
        goto done;
     }
-    *siglen = (unsigned int)sigleni;
 
+    *siglen = (unsigned int)sigleni;
+   
     ret = 1;
 
  done:
@@ -534,4 +499,10 @@ int sm2_verify(const unsigned char *dgst, int dgstlen,
     BN_free(e);
     ECDSA_SIG_free(s);
     return ret;
+}
+
+
+int sm2_sign_size(EC_KEY *key)
+{
+    return ECDSA_size(key);
 }

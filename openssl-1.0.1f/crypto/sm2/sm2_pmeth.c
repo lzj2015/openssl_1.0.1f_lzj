@@ -8,7 +8,7 @@
 #include <openssl/asn1t.h>
 #include <openssl/ossl_typ.h>
 #include "evp_locl.h"
-
+#include<string.h>
 
 typedef struct {
     /* Key and paramgen group */

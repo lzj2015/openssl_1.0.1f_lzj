@@ -127,6 +127,7 @@ and [options] can be one of
 	no-sm3                  - China SM Scheme (sm3)
 	no-sm4                  - China SM Scheme (sm4)
 	no-sm2                  - China SM Scheme (sm2)
+	no-tpsm2                - tpsm2
 
 Values that can be set
 TMP=tmpdir OUT=outdir SRC=srcdir BIN=binpath INC=header-outdir CC=C-compiler
@@ -290,6 +291,7 @@ $cflags.= " -DZLIB_SHARED" if $zlib_opt == 2;
 $cflags.=" -DOPENSSL_NO_SM3"   if $no_sm3;
 $cflags.=" -DOPENSSL_NO_SM4"   if $no_sm4;
 $cflags.=" -DOPENSSL_NO_SM2"   if $no_sm2;
+$cflags.=" -DOPENSSL_NO_TPSM2"   if $no_tpsm2;
 
 if ($no_static_engine)
 	{
@@ -809,6 +811,7 @@ sub var_add
 	return("") if $no_sm3 && dir =~ /\/sm3/;
 	return("") if $no_sm4 && dir =~ /\/sm4/;
 	return("") if $no_sm2 && dir =~ /\/sm2/;
+	return("") if $no_sm2 && dir =~ /\/tpsm2/;
 
 	$val =~ s/^\s*(.*)\s*$/$1/;
 	@a=split(/\s+/,$val);
@@ -870,6 +873,7 @@ sub var_add
 	@a=grep(!/(^sm3)|(_sm3$)/,@a) if $no_sm3;
 	@a=grep(!/(^sm4)|(_sm4$)/,@a) if $no_sm4;
 	@a=grep(!/(^sm2)|(_sm2$)/,@a) if $no_sm2;
+	@a=grep(!/(^tpsm2)|(_tpsm2$)/,@a) if $no_tpsm2;
 
 	$ret=join(' ',@a)." ";
 	return($ret);
@@ -1174,7 +1178,8 @@ sub read_options
 		#China SM
 		"no-sm3" => \$no_sm3,
 		"no-sm4" => \$no_sm4,
-		"no-sm2" => \$no_sm2
+		"no-sm2" => \$no_sm2,
+		"no-tpsm2" => \$no_tpsm2
 		);
 
 	if (exists $valid_options{$_})

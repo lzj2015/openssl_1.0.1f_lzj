@@ -114,7 +114,7 @@ $ ENCRYPT_TYPES = "Basic,"+ -
 		  "MD2,MD4,MD5,SM3,SHA,MDC2,HMAC,RIPEMD,"+ET_WHIRLPOOL+","+ -
 		  "DES,AES,SM4,RC2,RC4,RC5,IDEA,BF,CAST,CAMELLIA,SEED,MODES,"+ -
 		  "BN,EC,RSA,DSA,ECDSA,DH,ECDH,SM2,DSO,ENGINE,"+ -
-		  "BUFFER,BIO,STACK,LHASH,RAND,ERR,"+ -
+		  "TPSM2,BUFFER,BIO,STACK,LHASH,RAND,ERR,"+ -
 		  "EVP,EVP_2,EVP_3,ASN1,ASN1_2,PEM,X509,X509V3,"+ -
 		  "CONF,TXT_DB,PKCS7,PKCS12,COMP,OCSP,UI,KRB5,"+ -
 		  "CMS,PQUEUE,TS,JPAKE,SRP,STORE,CMAC"
@@ -250,6 +250,7 @@ $ LIB_EC = "ec_lib,ecp_smpl,ecp_mont,ecp_nist,ec_cvt,ec_mult,"+ -
 	"ecp_nistp224,ecp_nistp256,ecp_nistp521,ecp_nistputil,"+ -
 	"ecp_oct,ec2_oct,ec_oct"
 $ LIB_SM2 = "sm2_err,sm2_crypt,sm2_sign,sm2_dh,sm2_pmeth"
+$ LIB_TPSM2 = "tpsm2err,tpsm2lib,tpsm2clnt,tpsm2srvr"
 $ LIB_RSA = "rsa_eay,rsa_gen,rsa_lib,rsa_sign,rsa_saos,rsa_err,"+ -
 	"rsa_pk1,rsa_ssl,rsa_none,rsa_oaep,rsa_chk,rsa_null,"+ -
 	"rsa_pss,rsa_x931,rsa_asn1,rsa_depr,rsa_ameth,rsa_prn,"+ -

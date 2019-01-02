@@ -4352,3 +4352,5 @@ SM3_Update                              4720	EXIST::FUNCTION:SM3
 EVP_sm4_cfb                             4721	EXIST::FUNCTION:SM4
 sm2_ec_field_size                       4722	EXIST::FUNCTION:SM2
 sm2_compute_key                         4723	EXIST::FUNCTION:SM2
+sm2_bn2binpad                           4724	EXIST::FUNCTION:SM2
+

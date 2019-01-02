@@ -1,16 +1,22 @@
 #include <openssl/sm4.h>
 #include <openssl/modes.h>
 
+
+struct sm4_gcm_st
+{
+    GCM128_CONTEXT *gcm; 
+};
+
 void SM4_GCM128_free(SM4_GCM *ctx)
 {
   	CRYPTO_gcm128_release(ctx->gcm);
 }
 
-void SM4_GCM128_new(const unsigned char *userKey, size_t length, SM4_GCM *ctx)
+void SM4_GCM128_new(const unsigned char *userKey, size_t length, SM4_GCM **ctx)
 {
  	SM4_KEY  key;
  	SM4_set_key(userKey,length,&key);
- 	ctx->gcm = CRYPTO_gcm128_new(&key,(block128_f)SM4_encrypt);
+ 	(*ctx)->gcm = CRYPTO_gcm128_new(&key,(block128_f)SM4_encrypt);
 }
 
 void SM4_GCM128_setiv(SM4_GCM *ctx, const unsigned char *iv, size_t len)

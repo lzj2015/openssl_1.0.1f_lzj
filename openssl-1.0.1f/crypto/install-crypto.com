@@ -77,7 +77,7 @@ $ sdirs := , -
    objects, -
    md2, md4, md5, sm3, sha, mdc2, hmac, ripemd, whrlpool, -
    des, aes, sm4, rc2, rc4, rc5, idea, bf, cast, camellia, seed, -
-   bn, ec, rsa, dsa, ecdsa, dh, ecdh, sm2, dso, engine, -
+   bn, ec, rsa, dsa, ecdsa, dh, ecdh, sm2, dso, engine, tpsm2, -
    buffer, bio, stack, lhash, rand, err, -
    evp, asn1, pem, x509, x509v3, conf, txt_db, pkcs7, pkcs12, comp, ocsp, -
    ui, krb5, -
@@ -115,6 +115,7 @@ $ exheader_ecdsa := ecdsa.h
 $ exheader_dh := dh.h
 $ exheader_ecdh := ecdh.h
 $ exheader_sm2 := sm2.h
+$ exheader_tpsm2 := tpsm2.h
 $ exheader_dso := dso.h
 $ exheader_engine := engine.h
 $ exheader_buffer := buffer.h

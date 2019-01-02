@@ -42,7 +42,11 @@ extern "C"
 # endif
 
 
+int sm2_bn2binpad(const BIGNUM *a, unsigned char *to, int tolen);
+
 size_t sm2_ec_field_size(const EC_GROUP *group);
+
+int sm2_computer_z_size(const EVP_MD *digest);
 
 int sm2_compute_z_digest(unsigned char *out,
                          const EVP_MD *digest,
@@ -74,6 +78,8 @@ int sm2_do_verify(const EC_KEY *key,
 /*
  * SM2 signature generation.
  */
+
+int sm2_sign_size(EC_KEY *key);
 int sm2_sign(const unsigned char *dgst, int dgstlen,
              unsigned char *sig, unsigned int *siglen, EC_KEY *eckey);
 
@@ -111,9 +117,6 @@ int sm2_compute_key(unsigned char *out, size_t olen, const EC_POINT *Rb, const E
                     const unsigned char *a_z, const size_t az_len,
                     const unsigned char *b_z, const size_t bz_len, 
                     const EVP_MD *digest);
-
-
-
 
 
 
