@@ -70,13 +70,13 @@ extern "C"
 
 
 
-typedef struct sm4_gcm_st SM4_GCM;
+typedef struct GCM128_CONTEXT SM4_GCM;
 
 # ifdef __cplusplus
 extern "C"
 {
 # endif // __cplusplus
-    void SM4_GCM128_new(const unsigned char *userKey, size_t length, SM4_GCM **ctx); 
+    SM4_GCM *SM4_GCM128_new(const unsigned char *userKey, size_t length); 
     void SM4_GCM128_setiv(SM4_GCM *ctx, const unsigned char *iv, size_t len);
     int SM4_GCM128_aad(SM4_GCM *ctx, const unsigned char *aad, size_t len);
 
