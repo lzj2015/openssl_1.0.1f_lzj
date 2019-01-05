@@ -643,7 +643,7 @@ printf("\nkey block\n");
 #endif
 
 	if (!(s->options & SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS)
-		&& s->method->version <= TLS1_VERSION)
+		&& (s->method->version <= TLS1_VERSION || s->method->version == TLS1_0_VERSION))
 		{
 		/* enable vulnerability countermeasure for CBC ciphers with
 		 * known-IV problem (http://www.openssl.org/~bodo/tls-cbc.txt)
@@ -705,7 +705,7 @@ int tls1_enc(SSL *s, int send)
 			int ivlen;
 			enc=EVP_CIPHER_CTX_cipher(s->enc_write_ctx);
 			/* For TLSv1.1 and later explicit IV */
-			if (s->version >= TLS1_1_VERSION
+			if ((s->version >= TLS1_1_VERSION)
 				&& EVP_CIPHER_mode(enc) == EVP_CIPH_CBC_MODE)
 				ivlen = EVP_CIPHER_iv_length(enc);
 			else

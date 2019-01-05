@@ -267,7 +267,7 @@ int ssl3_accept(SSL *s)
 			s->server=1;
 			if (cb != NULL) cb(s,SSL_CB_HANDSHAKE_START,1);
 
-			if ((s->version>>8) != 3)
+			if ((s->version>>8) != 3  && (s->version) != TLS1_0_VERSION)
 				{
 				SSLerr(SSL_F_SSL3_ACCEPT, ERR_R_INTERNAL_ERROR);
 				return -1;
@@ -958,7 +958,7 @@ int ssl3_get_client_hello(SSL *s)
 	    (s->version != DTLS1_VERSION && s->client_version < s->version))
 		{
 		SSLerr(SSL_F_SSL3_GET_CLIENT_HELLO, SSL_R_WRONG_VERSION_NUMBER);
-		if ((s->client_version>>8) == SSL3_VERSION_MAJOR && 
+		if (((s->client_version>>8) == SSL3_VERSION_MAJOR || s->client_version == TLS1_0_VERSION) && 
 			!s->enc_write_ctx && !s->write_hash)
 			{
 			/* similar to ssl3_get_record, send alert using remote version number */
@@ -989,7 +989,7 @@ int ssl3_get_client_hello(SSL *s)
 
 	/* get the session-id */
 	j= *(p++);
-
+	
 	s->hit=0;
 	/* Versions before 0.9.7 always allow clients to resume sessions in renegotiation.
 	 * 0.9.7 and later allow this by default, but optionally ignore resumption requests
@@ -1175,7 +1175,7 @@ int ssl3_get_client_hello(SSL *s)
 
 #ifndef OPENSSL_NO_TLSEXT
 	/* TLS extensions*/
-	if (s->version >= SSL3_VERSION)
+	if (s->version >= SSL3_VERSION || s->version == TLS1_0_VERSION)
 		{
 		if (!ssl_parse_clienthello_tlsext(s,&p,d,n, &al))
 			{
@@ -1203,7 +1203,7 @@ int ssl3_get_client_hello(SSL *s)
 			}
 	}
 
-	if (!s->hit && s->version >= TLS1_VERSION && s->tls_session_secret_cb)
+	if (!s->hit && (s->version >= TLS1_VERSION || s->version == TLS1_0_VERSION) && s->tls_session_secret_cb)
 		{
 		SSL_CIPHER *pref_cipher=NULL;
 
@@ -1407,7 +1407,7 @@ int ssl3_get_client_hello(SSL *s)
 	 */
 
 	/* Handles TLS extensions that we couldn't check earlier */
-	if (s->version >= SSL3_VERSION)
+	if (s->version >= SSL3_VERSION || s->version == TLS1_0_VERSION)
 		{
 		if (ssl_check_clienthello_tlsext_late(s) <= 0)
 			{
@@ -2200,7 +2200,7 @@ int ssl3_get_client_key_exchange(SSL *s)
 			}
 
 		/* TLS and [incidentally] DTLS{0xFEFF} */
-		if (s->version > SSL3_VERSION && s->version != DTLS1_BAD_VER)
+		if ( (s->version > SSL3_VERSION  || s->version == TLS1_0_VERSION)&& s->version != DTLS1_BAD_VER)
 			{
 			n2s(p,i);
 			if (n != i+2)
@@ -3379,7 +3379,7 @@ int ssl3_get_client_certificate(SSL *s)
 			goto f_err;
 			}
 		/* If tls asked for a client cert, the client must return a 0 list */
-		if ((s->version > SSL3_VERSION) && s->s3->tmp.cert_request)
+		if ((s->version > SSL3_VERSION || s->version == TLS1_0_VERSION ) && s->s3->tmp.cert_request)
 			{
 			SSLerr(SSL_F_SSL3_GET_CLIENT_CERTIFICATE,SSL_R_TLS_PEER_DID_NOT_RESPOND_WITH_CERTIFICATE_LIST);
 			al=SSL_AD_UNEXPECTED_MESSAGE;

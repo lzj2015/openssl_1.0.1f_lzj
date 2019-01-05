@@ -171,11 +171,16 @@ extern "C" {
 #define TLS1_VERSION_MAJOR		0x03
 #define TLS1_VERSION_MINOR		0x01
 
+#define TLS1_0_VERSION			0x0101
+#define TLS1_0_VERSION_MAJOR	0x01
+#define TLS1_0_VERSION_MINOR	0x01
+
+
 #define TLS1_get_version(s) \
-		((s->version >> 8) == TLS1_VERSION_MAJOR ? s->version : 0)
+		(((s->version >> 8) == TLS1_VERSION_MAJOR || s->version == TLS1_0_VERSION) ? s->version : 0)
 
 #define TLS1_get_client_version(s) \
-		((s->client_version >> 8) == TLS1_VERSION_MAJOR ? s->client_version : 0)
+		(((s->client_version >> 8) == TLS1_VERSION_MAJOR || s->client_version == TLS1_0_VERSION) ? s->client_version : 0)
 
 #define TLS1_AD_DECRYPTION_FAILED	21
 #define TLS1_AD_RECORD_OVERFLOW		22

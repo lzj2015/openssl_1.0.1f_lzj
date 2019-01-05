@@ -1905,6 +1905,10 @@ const SSL_METHOD *TLSv1_1_method(void);		/* TLSv1.1 */
 const SSL_METHOD *TLSv1_1_server_method(void);	/* TLSv1.1 */
 const SSL_METHOD *TLSv1_1_client_method(void);	/* TLSv1.1 */
 
+const SSL_METHOD *TLSv1_0_method(void);		/* TLSv1.0 */
+const SSL_METHOD *TLSv1_0_server_method(void);	/* TLSv1.0 */
+const SSL_METHOD *TLSv1_0_client_method(void);	/* TLSv1.0 */
+
 const SSL_METHOD *TLSv1_2_method(void);		/* TLSv1.2 */
 const SSL_METHOD *TLSv1_2_server_method(void);	/* TLSv1.2 */
 const SSL_METHOD *TLSv1_2_client_method(void);	/* TLSv1.2 */

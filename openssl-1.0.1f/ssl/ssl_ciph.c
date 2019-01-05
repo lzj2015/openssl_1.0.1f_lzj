@@ -672,8 +672,9 @@ int ssl_cipher_get_evp(const SSL_SESSION *s, const EVP_CIPHER **enc,
 		{
 		const EVP_CIPHER *evp;
 
-		if (s->ssl_version>>8 != TLS1_VERSION_MAJOR ||
-		    s->ssl_version < TLS1_VERSION)
+		if (s->ssl_version != TLS1_0_VERSION 
+			&& (s->ssl_version>>8 != TLS1_VERSION_MAJOR 
+				|| s->ssl_version < TLS1_VERSION))
 			return 1;
 
 #ifdef OPENSSL_FIPS

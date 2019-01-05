@@ -343,7 +343,7 @@ fprintf(stderr, "Record type=%d, Length=%d\n", rr->type, rr->length);
 				}
 			}
 
-		if ((version>>8) != SSL3_VERSION_MAJOR)
+		if ((version>>8) != SSL3_VERSION_MAJOR && version != TLS1_0_VERSION)
 			{
 			SSLerr(SSL_F_SSL3_GET_RECORD,SSL_R_WRONG_VERSION_NUMBER);
 			goto err;
@@ -1186,7 +1186,7 @@ start:
 	if (s->server &&
 		SSL_is_init_finished(s) &&
     		!s->s3->send_connection_binding &&
-		(s->version > SSL3_VERSION) &&
+		(s->version > SSL3_VERSION || s->version == TLS1_0_VERSION) &&
 		(s->s3->handshake_fragment_len >= 4) &&
 		(s->s3->handshake_fragment[0] == SSL3_MT_CLIENT_HELLO) &&
 		(s->session != NULL) && (s->session->cipher != NULL) &&
@@ -1361,7 +1361,7 @@ start:
 		/* TLS up to v1.1 just ignores unknown message types:
 		 * TLS v1.2 give an unexpected message alert.
 		 */
-		if (s->version >= TLS1_VERSION && s->version <= TLS1_1_VERSION)
+		if ((s->version >= TLS1_VERSION && s->version <= TLS1_1_VERSION) || s->version == TLS1_0_VERSION)
 			{
 			rr->length = 0;
 			goto start;

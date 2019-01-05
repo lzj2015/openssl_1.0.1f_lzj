@@ -313,6 +313,11 @@ int ssl_get_new_session(SSL *s, int session)
 			ss->ssl_version=TLS1_1_VERSION;
 			ss->session_id_length=SSL3_SSL_SESSION_ID_LENGTH;
 			}
+		else if (s->version == TLS1_0_VERSION)
+			{
+			ss->ssl_version=TLS1_0_VERSION;
+			ss->session_id_length=SSL3_SSL_SESSION_ID_LENGTH;
+			}
 		else if (s->version == TLS1_2_VERSION)
 			{
 			ss->ssl_version=TLS1_2_VERSION;
@@ -584,7 +589,7 @@ int ssl_get_prev_session(SSL *s, unsigned char *session_id, int len,
 		p=buf;
 		l=ret->cipher_id;
 		l2n(l,p);
-		if ((ret->ssl_version>>8) >= SSL3_VERSION_MAJOR)
+		if ((ret->ssl_version>>8) >= SSL3_VERSION_MAJOR || ret->ssl_version == TLS1_0_VERSION)
 			ret->cipher=ssl_get_cipher_by_char(s,&(buf[2]));
 		else 
 			ret->cipher=ssl_get_cipher_by_char(s,&(buf[1]));
@@ -924,7 +929,7 @@ int SSL_set_session_ticket_ext_cb(SSL *s, tls_session_ticket_ext_cb_fn cb,
 
 int SSL_set_session_ticket_ext(SSL *s, void *ext_data, int ext_len)
 	{
-	if (s->version >= TLS1_VERSION)
+	if (s->version >= TLS1_VERSION || s->version == TLS1_0_VERSION)
 		{
 		if (s->tlsext_session_ticket)
 			{

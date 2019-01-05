@@ -4069,7 +4069,7 @@ int ssl3_get_req_cert_type(SSL *s, unsigned char *p)
 	alg_k = s->s3->tmp.new_cipher->algorithm_mkey;
 
 #ifndef OPENSSL_NO_GOST
-	if (s->version >= TLS1_VERSION)
+	if (s->version >= TLS1_VERSION || s->version == TLS1_0_VERSION)
 		{
 		if (alg_k & SSL_kGOST)
 			{
@@ -4108,7 +4108,7 @@ int ssl3_get_req_cert_type(SSL *s, unsigned char *p)
 	p[ret++]=SSL3_CT_DSS_SIGN;
 #endif
 #ifndef OPENSSL_NO_ECDH 
-	if ((alg_k & (SSL_kECDHr|SSL_kECDHe)) && (s->version >= TLS1_VERSION))
+	if ((alg_k & (SSL_kECDHr|SSL_kECDHe)) && (s->version >= TLS1_VERSION || s->version == TLS1_0_VERSION))
 		{
 		p[ret++]=TLS_CT_RSA_FIXED_ECDH;
 		p[ret++]=TLS_CT_ECDSA_FIXED_ECDH;
@@ -4119,7 +4119,7 @@ int ssl3_get_req_cert_type(SSL *s, unsigned char *p)
 	/* ECDSA certs can be used with RSA cipher suites as well 
 	 * so we don't need to check for SSL_kECDH or SSL_kEECDH
 	 */
-	if (s->version >= TLS1_VERSION)
+	if (s->version >= TLS1_VERSION || s->version == TLS1_0_VERSION)
 		{
 		p[ret++]=TLS_CT_ECDSA_SIGN;
 		}

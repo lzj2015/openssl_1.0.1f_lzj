@@ -154,7 +154,6 @@ int main(int argc, char *argv[])
 
 	SSL_CTX *s_ctx = NULL;
 	SSL_CTX *c_ctx = NULL;
-	const SSL_METHOD *meth = NULL;
 	SSL *c_ssl, *s_ssl;
 	long bytes = 256L;
 
@@ -188,10 +187,8 @@ int main(int argc, char *argv[])
 	SSL_library_init();
 	SSL_load_error_strings();
 
-	meth = TLSv1_method();
-
-	c_ctx = SSL_CTX_new(meth);
-	s_ctx = SSL_CTX_new(meth);
+	c_ctx = SSL_CTX_new(TLSv1_0_client_method());
+	s_ctx = SSL_CTX_new(TLSv1_0_server_method());
 	if ((c_ctx == NULL) || (s_ctx == NULL))
 	{
 		ERR_print_errors(bio_err);
@@ -264,6 +261,8 @@ int main(int argc, char *argv[])
 
 	SSL_free(s_ssl);
 	SSL_free(c_ssl);
+
+
 
 end:
 	if (s_ctx != NULL)
@@ -389,7 +388,7 @@ int doit(SSL *s_ssl, SSL *c_ssl, long count)
 			if (c_write)
 			{
 				j = (cw_num > (long)sizeof(cbuf)) ? (int)sizeof(cbuf) : (int)cw_num;
-				i = BIO_write(c_bio, cbuf, j);
+				i = BIO_write(c_bio, ""cbuf"", j);
 				if (i < 0)
 				{
 					c_r = 0;

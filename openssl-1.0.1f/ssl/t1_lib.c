@@ -1762,7 +1762,7 @@ int ssl_prepare_clienthello_tlsext(SSL *s)
 			break;
 			}
 		}
-	using_ecc = using_ecc && (s->version >= TLS1_VERSION);
+	using_ecc = using_ecc && (s->version >= TLS1_VERSION || s->version == TLS1_0_VERSION);
 	if (using_ecc)
 		{
 		if (s->tlsext_ecpointformatlist != NULL) OPENSSL_free(s->tlsext_ecpointformatlist);
@@ -2182,7 +2182,7 @@ int tls1_process_ticket(SSL *s, unsigned char *session_id, int len,
 	 */
 	if (SSL_get_options(s) & SSL_OP_NO_TICKET)
 		return 0;
-	if ((s->version <= SSL3_VERSION) || !limit)
+	if ((s->version <= SSL3_VERSION && s->version != TLS1_0_VERSION) || !limit)
 		return 0;
 	if (p >= limit)
 		return -1;

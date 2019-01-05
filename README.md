@@ -25,9 +25,9 @@ The GM/T standards cover 1 protocols:
 
 The GM/T 0024-2014 TLS VPN protocol is different from TLS1.0 in the follows aspects:
 
- - Current version of TLS is 1.0 (0x0300) while GM/T SSL version is 1.1 (0x0101), but in this implementation, i did not change the version, so it still (0x0300).
+ - Current version of TLS is 1.0 (0x0300) while GM/T SSL version is 1.1 (0x0101), here we add new method for  GM/T SSL `TLSv1_0_method`.
  - The handshake protocol of GM/T SSL is different from TLS handshake. The client point has to send his certificate. 
-
+ - More detail see /openssl1.0.1f/sm2ssltest/sm2ssltest.c
 
 This openssl supports the standard TLS 1.0 protocol with SM2/SM3/SM4 ciphersuites. Currently the following ciphersuites are supported:
 

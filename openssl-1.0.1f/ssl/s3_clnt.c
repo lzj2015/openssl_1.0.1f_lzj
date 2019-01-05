@@ -234,7 +234,7 @@ int ssl3_connect(SSL *s)
 			s->server=0;
 			if (cb != NULL) cb(s,SSL_CB_HANDSHAKE_START,1);
 
-			if ((s->version & 0xff00 ) != 0x0300)
+			if ((s->version & 0xff00 ) != 0x0300 && (s->version) != TLS1_0_VERSION)
 				{
 				SSLerr(SSL_F_SSL3_CONNECT, ERR_R_INTERNAL_ERROR);
 				ret = -1;
@@ -725,6 +725,8 @@ int ssl3_client_hello(SSL *s)
 		*(p++)=s->client_version&0xff;
 #endif
 
+	
+
 		/* Random stuff */
 		memcpy(p,s->s3->client_random,SSL3_RANDOM_SIZE);
 		p+=SSL3_RANDOM_SIZE;
@@ -797,12 +799,10 @@ int ssl3_client_hello(SSL *s)
 			goto err;
 			}
 #endif
-		
 		l=(p-d);
 		d=buf;
 		*(d++)=SSL3_MT_CLIENT_HELLO;
 		l2n3(l,d);
-
 		s->state=SSL3_ST_CW_CLNT_HELLO_B;
 		/* number of bytes to write */
 		s->init_num=p-buf;
@@ -889,7 +889,7 @@ int ssl3_get_server_hello(SSL *s)
 
 #ifndef OPENSSL_NO_TLSEXT
 	/* check if we want to resume the session based on external pre-shared secret */
-	if (s->version >= TLS1_VERSION && s->tls_session_secret_cb)
+	if ((s->version >= TLS1_VERSION || s->version == TLS1_0_VERSION) && s->tls_session_secret_cb)
 		{
 		SSL_CIPHER *pref_cipher=NULL;
 		s->session->master_key_length=sizeof(s->session->master_key);
@@ -1040,7 +1040,7 @@ int ssl3_get_server_hello(SSL *s)
 
 #ifndef OPENSSL_NO_TLSEXT
 	/* TLS extensions*/
-	if (s->version >= SSL3_VERSION)
+	if (s->version >= SSL3_VERSION || s->version == TLS1_0_VERSION)
 		{
 		if (!ssl_parse_serverhello_tlsext(s,&p,d,n, &al))
 			{
@@ -1906,7 +1906,7 @@ int ssl3_get_certificate_request(SSL *s)
 		}
 
 	/* TLS does not like anon-DH with client cert */
-	if (s->version > SSL3_VERSION)
+	if (s->version > SSL3_VERSION || s->version == TLS1_0_VERSION)
 		{
 		if (s->s3->tmp.new_cipher->algorithm_auth & SSL_aNULL)
 			{
@@ -2294,7 +2294,7 @@ int ssl3_send_client_key_exchange(SSL *s)
 
 			q=p;
 			/* Fix buf for TLS and beyond */
-			if (s->version > SSL3_VERSION)
+			if (s->version > SSL3_VERSION || s->version == TLS1_0_VERSION)
 				p+=2;
 			n=RSA_public_encrypt(sizeof tmp_buf,
 				tmp_buf,p,rsa,RSA_PKCS1_PADDING);
@@ -2309,7 +2309,7 @@ int ssl3_send_client_key_exchange(SSL *s)
 				}
 
 			/* Fix buf for TLS and beyond */
-			if (s->version > SSL3_VERSION)
+			if (s->version > SSL3_VERSION || s->version == TLS1_0_VERSION)
 				{
 				s2n(n,q);
 				n+=2;

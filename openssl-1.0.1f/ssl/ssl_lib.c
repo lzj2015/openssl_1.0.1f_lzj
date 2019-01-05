@@ -1635,7 +1635,7 @@ int SSL_export_keying_material(SSL *s, unsigned char *out, size_t olen,
 	const char *label, size_t llen, const unsigned char *p, size_t plen,
 	int use_context)
 	{
-	if (s->version < TLS1_VERSION)
+	if (s->version < TLS1_VERSION && s->version != TLS1_0_VERSION)
 		return -1;
 
 	return s->method->ssl3_enc->export_keying_material(s, out, olen, label,
@@ -1687,7 +1687,7 @@ SSL_CTX *SSL_CTX_new(const SSL_METHOD *meth)
 		}
 
 #ifdef OPENSSL_FIPS
-	if (FIPS_mode() && (meth->version < TLS1_VERSION))	
+	if (FIPS_mode() && (meth->version < TLS1_VERSION) &&  (meth->version != TLS1_0_VERSION))	
 		{
 		SSLerr(SSL_F_SSL_CTX_NEW, SSL_R_ONLY_TLS_ALLOWED_IN_FIPS_MODE);
 		return NULL;
@@ -2694,6 +2694,8 @@ const char *SSL_get_version(const SSL *s)
 		return("TLSv1.2");
 	else if (s->version == TLS1_1_VERSION)
 		return("TLSv1.1");
+	else if (s->version == TLS1_0_VERSION)
+		return("TLSv1.0");
 	else if (s->version == TLS1_VERSION)
 		return("TLSv1");
 	else if (s->version == SSL3_VERSION)
